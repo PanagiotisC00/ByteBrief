@@ -221,8 +221,3 @@ export default async function BlogPage() {
     </div>
   )
 }
-
-export const metadata = {
-  title: 'All Articles - ByteBrief',
-  description: 'Browse all our tech articles, news, and insights in one place.',
-}
