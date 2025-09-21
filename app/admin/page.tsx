@@ -40,46 +40,11 @@ async function getAdminStats() {
 }
 
 export default async function AdminDashboard() {
-  // Check authentication without throwing errors
+  // Check authentication
   const session = await getCurrentSession()
   
-  // If no session, show debug info instead of redirecting
   if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full">
-          <div className="bg-red-100 border border-red-300 rounded-lg p-6">
-            <h1 className="text-2xl font-bold text-red-800 mb-4">🚨 Server Session Debug</h1>
-            <div className="space-y-2 text-sm">
-              <div><strong>Session exists:</strong> {session ? 'Yes' : 'No'}</div>
-              <div><strong>User exists:</strong> {session?.user ? 'Yes' : 'No'}</div>
-              <div><strong>User role:</strong> {session?.user?.role || 'undefined'}</div>
-              {session?.user && (
-                <>
-                  <div><strong>Email:</strong> {session.user.email}</div>
-                  <div><strong>Name:</strong> {session.user.name || 'undefined'}</div>
-                  <div><strong>ID:</strong> {session.user.id || 'undefined'}</div>
-                </>
-              )}
-            </div>
-            <details className="mt-4">
-              <summary className="cursor-pointer font-semibold text-red-800">Full Server Session JSON</summary>
-              <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto">
-                {JSON.stringify(session, null, 2)}
-              </pre>
-            </details>
-            <div className="mt-6">
-              <a 
-                href="/admin/login" 
-                className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Back to Login
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    redirect('/admin/login')
   }
   
   const stats = await getAdminStats()

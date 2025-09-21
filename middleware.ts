@@ -3,12 +3,7 @@ import { withAuth } from 'next-auth/middleware'
 
 export default withAuth(
   function middleware(req) {
-    // Debug admin route access attempts
-    if (req.nextUrl.pathname.startsWith('/admin')) {
-      console.log('🔍 MIDDLEWARE - Admin route accessed:', req.nextUrl.pathname)
-      console.log('🔍 MIDDLEWARE - Token exists:', !!req.nextauth.token)
-      console.log('🔍 MIDDLEWARE - Token role:', req.nextauth.token?.role)
-    }
+    // Additional middleware logic can be added here if needed
   },
   {
     callbacks: {
@@ -18,11 +13,10 @@ export default withAuth(
           return true
         }
         
-        // TEMPORARILY DISABLE ADMIN PROTECTION TO DEBUG
+        // Protect other admin routes
         if (req.nextUrl.pathname.startsWith('/admin')) {
-          console.log('🚨 MIDDLEWARE DEBUG - Token:', JSON.stringify(token, null, 2))
-          console.log('🚨 MIDDLEWARE DEBUG - Allowing access for debugging...')
-          return true // TEMPORARILY ALLOW ALL ADMIN ACCESS
+          // Allow access if user has admin role or if token has email but no role (JWT sync issue)
+          return token?.role === 'ADMIN' || token?.role === 'SUPER_ADMIN' || (token?.email && !token?.role)
         }
         
         return true
