@@ -14,17 +14,18 @@ export default function AdminLoginPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // Redirect to admin if already authenticated and is admin
+  // Redirect to admin if already authenticated and is admin (prevent infinite loops)
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       if (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') {
-        // Force redirect immediately
-        window.location.href = '/admin'
-      } else {
-        alert(`Debug: User is authenticated but role is: ${session.user.role || 'undefined'}`)
+        // Only redirect if we're not already redirecting
+        if (!isLoading) {
+          setIsLoading(true) // Prevent multiple redirects
+          window.location.replace('/admin') // Use replace to avoid back button issues
+        }
       }
     }
-  }, [session, status, router])
+  }, [session, status, isLoading])
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
