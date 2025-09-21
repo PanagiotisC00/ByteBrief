@@ -113,18 +113,20 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {category.posts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.slug}`}>
                   <Card className="group hover:shadow-lg transition-all duration-300 h-full">
-                    <div className="relative overflow-hidden">
+                    <div className="relative overflow-hidden bg-muted/30">
                       <FallbackImage
                         src={post.image}
                         alt={post.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute top-4 left-4 flex items-center space-x-2">
-                        {post.featured && (
-                          <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                            Featured
-                          </Badge>
-                        )}
+                        <Badge 
+                          variant="secondary" 
+                          className="text-white"
+                          style={{ backgroundColor: post.category.color || '#3B82F6' }}
+                        >
+                          {post.category.name}
+                        </Badge>
                       </div>
                     </div>
                     <CardHeader className="pb-2">
