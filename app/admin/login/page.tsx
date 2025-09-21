@@ -92,14 +92,31 @@ export default function AdminLoginPage() {
           {/* Manual redirect button for testing */}
           {status === 'authenticated' && session?.user?.role === 'ADMIN' && (
             <Button 
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault()
                 alert('Button clicked! Redirecting to /admin...')
-                window.location.href = '/admin'
+                console.log('Attempting redirect to /admin')
+                setTimeout(() => {
+                  window.location.replace('/admin')
+                }, 100)
               }}
               className="w-full bg-green-600 hover:bg-green-700"
             >
               Go to Admin Dashboard
             </Button>
+          )}
+
+          {/* Alternative: Direct link test */}
+          {status === 'authenticated' && session?.user?.role === 'ADMIN' && (
+            <div className="text-center">
+              <a 
+                href="/admin" 
+                className="inline-block w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded text-center"
+                onClick={() => alert('Link clicked!')}
+              >
+                Alternative: Direct Link to Admin
+              </a>
+            </div>
           )}
           
           <div className="text-center text-sm text-muted-foreground">
