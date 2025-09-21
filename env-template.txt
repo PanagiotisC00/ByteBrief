@@ -1,0 +1,38 @@
+# ByteBrief Blog Environment Variables
+# Copy this content to a new .env.local file and fill in your actual values
+
+# Database Configuration (Supabase)
+# Get these from your Supabase project settings > Database
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+DIRECT_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+
+# Supabase Configuration
+# Get these from your Supabase project settings > API
+NEXT_PUBLIC_SUPABASE_URL="https://[YOUR-PROJECT-REF].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR-ANON-KEY]"
+SUPABASE_SERVICE_ROLE_KEY="[YOUR-SERVICE-ROLE-KEY]"
+
+# NextAuth Configuration
+NEXTAUTH_SECRET="[YOUR-SECRET-KEY]"  # Generate with: openssl rand -base64 32
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google OAuth (for admin authentication)
+# Create OAuth credentials at https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID="[YOUR-GOOGLE-CLIENT-ID]"
+GOOGLE_CLIENT_SECRET="[YOUR-GOOGLE-CLIENT-SECRET]"
+
+# Admin Configuration
+# Set the email addresses that should have admin access
+ADMIN_EMAILS="admin@yoursite.com,another-admin@yoursite.com"
+
+# Optional: Image Upload Configuration
+# If you want to use Cloudinary or similar for image uploads
+CLOUDINARY_CLOUD_NAME=""
+CLOUDINARY_API_KEY=""
+CLOUDINARY_API_SECRET=""
+
+# Optional: Analytics
+GOOGLE_ANALYTICS_ID=""
+
+# Environment
+NODE_ENV="development"

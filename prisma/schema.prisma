@@ -1,0 +1,144 @@
+// ByteBrief Blog - Prisma Schema
+// Database schema for the tech blog with admin functionality
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model for admin authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  password  String?  // For credentials authentication (optional, mainly using Google OAuth)
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts Post[]
+  
+  @@map("users")
+}
+
+// User roles for access control
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Category model for organizing posts
+model Category {
+  id          String @id @default(cuid())
+  name        String @unique
+  slug        String @unique
+  description String?
+  color       String? // Hex color for UI display
+  icon        String? // Icon name for category
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  posts Post[]
+  
+  @@map("categories")
+}
+
+// Main blog post model
+model Post {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  excerpt     String?
+  content     String      @db.Text
+  image       String?     // Featured image URL
+  imageAlt    String?     // Alt text for featured image
+  status      PostStatus  @default(DRAFT)
+  viewCount   Int         @default(0)
+  readTime    Int?        // Estimated read time in minutes
+  sources     String?     // Source URLs separated by commas
+  publishedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Foreign keys
+  authorId    String
+  categoryId  String
+
+  // Relations
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  tags        PostTag[]
+  comments    Comment[]
+
+  @@map("posts")
+}
+
+// Post status enum
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Tag model for post tagging
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+// Many-to-many relationship between posts and tags
+model PostTag {
+  postId String
+  tagId  String
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+// Comment model for future functionality
+model Comment {
+  id        String        @id @default(cuid())
+  content   String        @db.Text
+  author    String        // Author name (for non-registered users)
+  email     String        // Author email
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Foreign keys
+  postId String
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+// Comment status enum
+enum CommentStatus {
+  PENDING
+  APPROVED
+  SPAM
+  REJECTED
+}
