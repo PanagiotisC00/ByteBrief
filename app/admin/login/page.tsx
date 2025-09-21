@@ -93,9 +93,7 @@ export default function AdminLoginPage() {
           {status === 'authenticated' && session?.user?.role === 'ADMIN' && (
             <Button 
               onClick={() => {
-                console.log('🚀 REDIRECT - Attempting to go to /admin')
-                console.log('🚀 REDIRECT - Current URL:', window.location.href)
-                console.log('🚀 REDIRECT - Session:', session)
+                alert('Button clicked! Redirecting to /admin...')
                 window.location.href = '/admin'
               }}
               className="w-full bg-green-600 hover:bg-green-700"
