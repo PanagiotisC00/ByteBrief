@@ -16,18 +16,12 @@ export default function AdminLoginPage() {
 
   // Redirect to admin if already authenticated and is admin
   useEffect(() => {
-    console.log('Session status:', status)
-    console.log('Session data:', session)
-    
     if (status === 'authenticated' && session?.user) {
-      console.log('User role:', session.user.role)
-      
       if (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') {
-        console.log('Redirecting to admin dashboard...')
-        router.push('/admin')
-        router.refresh() // Force refresh to ensure redirect
+        // Force redirect immediately
+        window.location.href = '/admin'
       } else {
-        console.log('User is authenticated but not admin')
+        alert(`Debug: User is authenticated but role is: ${session.user.role || 'undefined'}`)
       }
     }
   }, [session, status, router])
