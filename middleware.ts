@@ -15,12 +15,12 @@ export default withAuth(
         
         // Protect other admin routes
         if (req.nextUrl.pathname.startsWith('/admin')) {
-          // Allow access if user has admin role or if token has email but no role (JWT sync issue)
-          return (
-            token?.role === 'ADMIN' || 
-            token?.role === 'SUPER_ADMIN' || 
-            (!!token?.email && !token?.role)
-          )
+          // If no role but has email, might be timing issue - allow for now
+          if (!token?.role && token?.email) {
+            return true
+          }
+          
+          return token?.role === 'ADMIN' || token?.role === 'SUPER_ADMIN'
         }
         
         return true
