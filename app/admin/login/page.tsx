@@ -1,8 +1,9 @@
 // Admin login page
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Code2 } from 'lucide-react'
@@ -10,10 +11,31 @@ import Link from 'next/link'
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  // Redirect to admin if already authenticated and is admin
+  useEffect(() => {
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+    
+    if (status === 'authenticated' && session?.user) {
+      console.log('User role:', session.user.role)
+      
+      if (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') {
+        console.log('Redirecting to admin dashboard...')
+        router.push('/admin')
+        router.refresh() // Force refresh to ensure redirect
+      } else {
+        console.log('User is authenticated but not admin')
+      }
+    }
+  }, [session, status, router])
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
+      console.log('Starting Google sign in...')
       // Use NextAuth's built-in redirect - much simpler and more reliable
       await signIn('google', { 
         callbackUrl: '/admin',
@@ -23,6 +45,18 @@ export default function AdminLoginPage() {
       console.error('Sign in error:', error)
       setIsLoading(false) // Only set loading to false on error since redirect will happen on success
     }
+  }
+
+  // Show loading if checking session
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-accent border-r-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
