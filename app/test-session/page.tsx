@@ -4,10 +4,11 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Session } from 'next-auth'
 
 export default function TestSessionPage() {
   const { data: clientSession, status } = useSession()
-  const [serverSession, setServerSession] = useState(null)
+  const [serverSession, setServerSession] = useState<Session | null>(null)
 
   useEffect(() => {
     // Fetch server session via API
