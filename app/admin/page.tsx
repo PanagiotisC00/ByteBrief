@@ -43,7 +43,14 @@ export default async function AdminDashboard() {
   // Check authentication without throwing errors
   const session = await getCurrentSession()
   
+  console.log('=== ADMIN PAGE DEBUG ===')
+  console.log('Server session:', session)
+  console.log('User:', session?.user)
+  console.log('User role:', session?.user?.role)
+  console.log('========================')
+  
   if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    console.log('REDIRECTING TO LOGIN - Session check failed')
     redirect('/admin/login')
   }
   
