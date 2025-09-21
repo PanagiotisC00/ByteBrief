@@ -16,14 +16,12 @@ export default function AdminLoginPage() {
 
   // DEBUG: Show session info instead of redirecting
   useEffect(() => {
-    if (status !== 'loading') {
-      console.log('=== LOGIN PAGE DEBUG ===')
-      console.log('Status:', status)
-      console.log('Session exists:', !!session)
-      console.log('User:', session?.user)
-      console.log('Role:', session?.user?.role)
-      console.log('========================')
-    }
+    console.log('=== LOGIN PAGE DEBUG ===')
+    console.log('Status:', status)
+    console.log('Session exists:', !!session)
+    console.log('User:', session?.user)
+    console.log('Role:', session?.user?.role)
+    console.log('========================')
   }, [session, status])
 
   const handleGoogleSignIn = async () => {
@@ -41,7 +39,7 @@ export default function AdminLoginPage() {
     }
   }
 
-  // Show loading if checking session
+  // Show loading if checking session (status can be 'loading', 'authenticated', or 'unauthenticated')
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -72,18 +70,16 @@ export default function AdminLoginPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* DEBUG INFO */}
-          {status !== 'loading' && (
-            <div className="p-3 bg-muted rounded-lg text-xs space-y-1">
-              <div><strong>Status:</strong> {status}</div>
-              <div><strong>Session:</strong> {session ? 'Yes' : 'No'}</div>
-              {session?.user && (
-                <>
-                  <div><strong>Email:</strong> {session.user.email}</div>
-                  <div><strong>Role:</strong> {session.user.role || 'undefined'}</div>
-                </>
-              )}
-            </div>
-          )}
+          <div className="p-3 bg-muted rounded-lg text-xs space-y-1">
+            <div><strong>Status:</strong> {status}</div>
+            <div><strong>Session:</strong> {session ? 'Yes' : 'No'}</div>
+            {session?.user && (
+              <>
+                <div><strong>Email:</strong> {session.user.email}</div>
+                <div><strong>Role:</strong> {session.user.role || 'undefined'}</div>
+              </>
+            )}
+          </div>
 
           <Button 
             onClick={handleGoogleSignIn}
