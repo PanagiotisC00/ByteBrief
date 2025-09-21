@@ -376,7 +376,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         publishedAt={post.publishedAt?.toISOString() || post.createdAt.toISOString()}
         updatedAt={post.updatedAt.toISOString()}
         url={`https://bytebrief.vercel.app/blog/${post.slug}`}
-        imageUrl={post.image}
+        imageUrl={post.image || undefined}
         authorName={post.author.name || 'ByteBrief'}
         categoryName={post.category.name}
         readTime={post.readTime || undefined}
