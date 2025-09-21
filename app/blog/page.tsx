@@ -7,6 +7,35 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Calendar, Clock, User, Eye } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Blog - Latest Tech Articles & Insights',
+  description: 'Explore our collection of in-depth tech articles, tutorials, and insights covering web development, AI, software engineering, and the latest technology trends.',
+  keywords: [
+    'tech blog',
+    'technology articles',
+    'programming tutorials',
+    'web development',
+    'AI insights',
+    'software engineering',
+    'ByteBrief blog'
+  ],
+  openGraph: {
+    title: 'ByteBrief Blog - Latest Tech Articles & Insights',
+    description: 'Explore our collection of in-depth tech articles, tutorials, and insights covering the latest in technology.',
+    url: 'https://bytebrief.vercel.app/blog',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ByteBrief Blog - Latest Tech Articles & Insights',
+    description: 'Explore our collection of in-depth tech articles and tutorials.',
+  },
+  alternates: {
+    canonical: 'https://bytebrief.vercel.app/blog',
+  },
+}
 
 // Get all published blog posts
 async function getBlogPosts() {

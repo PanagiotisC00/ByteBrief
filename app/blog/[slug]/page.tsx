@@ -9,6 +9,8 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
+import { BlogPostStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data"
+import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
   params: {
@@ -52,7 +54,7 @@ async function getBlogPost(slug: string) {
 
     return {
       ...post,
-      tags: post.tags.map(pt => pt.tag)
+      tags: post.tags.map((pt: any) => pt.tag)
     }
   } catch (error) {
     console.error('Error fetching blog post:', error)
@@ -90,6 +92,81 @@ async function getRelatedPosts(categoryId: string, currentPostId: string, limit 
   } catch (error) {
     console.error('Error fetching related posts:', error)
     return []
+  }
+}
+
+// Generate dynamic metadata for each blog post
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const post = await getBlogPost(params.slug)
+  
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+      description: 'The requested blog post could not be found.'
+    }
+  }
+
+  const baseUrl = 'https://bytebrief.vercel.app'
+  const postUrl = `${baseUrl}/blog/${post.slug}`
+  const imageUrl = post.image || `${baseUrl}/bytebrief-logo.png`
+
+  return {
+    title: post.title,
+    description: post.excerpt || post.content.slice(0, 160) + '...',
+    keywords: [
+      post.category.name,
+      ...post.tags.map((tag: any) => tag.name),
+      'tech news',
+      'ByteBrief',
+      'technology',
+    ],
+    authors: [{ name: post.author.name || 'ByteBrief' }],
+    category: post.category.name,
+    
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.excerpt || post.content.slice(0, 160) + '...',
+      url: postUrl,
+      siteName: 'ByteBrief',
+      publishedTime: post.publishedAt?.toISOString(),
+      modifiedTime: post.updatedAt.toISOString(),
+      authors: [post.author.name || 'ByteBrief'],
+      section: post.category.name,
+      tags: post.tags.map((tag: any) => tag.name),
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.imageAlt || post.title,
+        }
+      ],
+    },
+
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt || post.content.slice(0, 160) + '...',
+      images: [imageUrl],
+      creator: '@bytebrief',
+    },
+
+    alternates: {
+      canonical: postUrl,
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
   }
 }
 
@@ -201,7 +278,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="mt-12 pt-8 border-t border-border">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {post.tags.map((tag: any) => (
                     <Badge key={tag.id} variant="secondary">
                       {tag.name}
                     </Badge>
@@ -215,7 +292,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="mt-8 pt-8 border-t border-border">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Sources</h3>
                 <div className="space-y-2">
-                  {post.sources.split(',').map((source, index) => {
+                  {post.sources.split(',').map((source: string, index: number) => {
                     const trimmedSource = source.trim()
                     return trimmedSource && (
                       <div key={index} className="flex items-center space-x-2">
@@ -253,7 +330,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {relatedPosts.map((relatedPost) => (
+                  {relatedPosts.map((relatedPost: any) => (
                     <Link key={relatedPost.id} href={`/blog/${relatedPost.slug}`}>
                       <Card className="group hover:shadow-lg transition-all duration-300 h-full">
                         <div className="relative overflow-hidden bg-muted/30">
@@ -291,27 +368,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
       </main>
       <Footer />
+      
+      {/* Structured Data for SEO */}
+      <BlogPostStructuredData
+        title={post.title}
+        description={post.excerpt || post.content.slice(0, 160) + '...'}
+        publishedAt={post.publishedAt?.toISOString() || post.createdAt.toISOString()}
+        updatedAt={post.updatedAt.toISOString()}
+        url={`https://bytebrief.vercel.app/blog/${post.slug}`}
+        imageUrl={post.image}
+        authorName={post.author.name || 'ByteBrief'}
+        categoryName={post.category.name}
+        readTime={post.readTime || undefined}
+      />
+      
+      <BreadcrumbStructuredData
+        items={[
+          { name: 'Home', url: 'https://bytebrief.vercel.app' },
+          { name: 'Blog', url: 'https://bytebrief.vercel.app/blog' },
+          { name: post.category.name, url: `https://bytebrief.vercel.app/category/${post.category.slug}` },
+          { name: post.title, url: `https://bytebrief.vercel.app/blog/${post.slug}` },
+        ]}
+      />
     </div>
   )
-}
-
-// Generate metadata for SEO
-export async function generateMetadata({ params }: BlogPostPageProps) {
-  const post = await getBlogPost(params.slug)
-  
-  if (!post) {
-    return {
-      title: 'Post Not Found - ByteBrief'
-    }
-  }
-
-  return {
-    title: `${post.title} - ByteBrief`,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: post.image ? [post.image] : undefined,
-    }
-  }
 }

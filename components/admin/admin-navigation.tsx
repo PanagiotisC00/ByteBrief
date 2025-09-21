@@ -3,6 +3,7 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { 
   DropdownMenu,
@@ -18,11 +19,14 @@ import {
   BarChart3, 
   LogOut,
   User,
-  Code2
+  Code2,
+  Menu,
+  X
 } from 'lucide-react'
 
 export function AdminNavigation() {
   const { data: session } = useSession()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: BarChart3 },
@@ -43,7 +47,7 @@ export function AdminNavigation() {
             </span>
           </Link>
 
-          {/* Navigation Items */}
+          {/* Desktop Navigation Items */}
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -60,8 +64,8 @@ export function AdminNavigation() {
             })}
           </div>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          {/* Desktop User Menu */}
+          <div className="hidden md:flex items-center space-x-4">
             <Button asChild variant="ghost" size="sm">
               <Link href="/">View Site</Link>
             </Button>
@@ -84,7 +88,76 @@ export function AdminNavigation() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-card/95 backdrop-blur">
+            <div className="px-4 py-3 space-y-3">
+              {/* Mobile Navigation Items */}
+              {navItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted/50 transition-colors font-medium"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                )
+              })}
+              
+              {/* Mobile User Actions */}
+              <div className="pt-3 border-t border-border space-y-2">
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted/50 transition-colors font-medium"
+                >
+                  <Code2 className="h-5 w-5" />
+                  <span>View Site</span>
+                </Link>
+                
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    signOut({ callbackUrl: '/' })
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors font-medium"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+              
+              {/* Mobile User Info */}
+              <div className="pt-3 border-t border-border">
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  Signed in as <span className="font-medium text-foreground">{session?.user?.name}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
