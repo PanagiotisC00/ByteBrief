@@ -2,8 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Code2 } from 'lucide-react'
@@ -11,33 +10,18 @@ import Link from 'next/link'
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      const result = await signIn('google', { 
+      // Use NextAuth's built-in redirect - much simpler and more reliable
+      await signIn('google', { 
         callbackUrl: '/admin',
-        redirect: false 
+        redirect: true  // Let NextAuth handle the redirect
       })
-      
-      if (result?.ok) {
-        // Check if user has admin role
-        const session = await getSession()
-        if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
-          router.push('/admin')
-        } else {
-          // Not an admin user
-          alert('Access denied. You do not have admin privileges.')
-        }
-      } else if (result?.error) {
-        alert('Sign in failed. Please make sure you are authorized as an admin.')
-      }
     } catch (error) {
       console.error('Sign in error:', error)
-      alert('An error occurred during sign in. Please try again.')
-    } finally {
-      setIsLoading(false)
+      setIsLoading(false) // Only set loading to false on error since redirect will happen on success
     }
   }
 
