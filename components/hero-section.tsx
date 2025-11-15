@@ -111,6 +111,7 @@ export function HeroSection({ featuredArticles }: HeroSectionProps) {
             <Card className="overflow-hidden bg-card/50 backdrop-blur border-border/50">
               <div className="relative">
                 <FallbackImage
+                  key={currentArticle.id}
                   src={currentArticle.image}
                   alt={currentArticle.title}
                   className="w-full h-64 object-contain bg-muted/50"

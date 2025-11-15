@@ -1,7 +1,7 @@
 // Client component for handling image fallbacks
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface FallbackImageProps {
   src: string | null
@@ -18,6 +18,12 @@ export function FallbackImage({
 }: FallbackImageProps) {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc)
   const [hasErrored, setHasErrored] = useState(false)
+
+  // Update image source when src prop changes
+  useEffect(() => {
+    setImgSrc(src || fallbackSrc)
+    setHasErrored(false)
+  }, [src, fallbackSrc])
 
   const handleError = () => {
     if (!hasErrored) {
