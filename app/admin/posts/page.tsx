@@ -21,11 +21,7 @@ async function getPosts() {
           color: true
         }
       },
-      _count: {
-        select: {
-          comments: true
-        }
-      }
+
     },
     orderBy: {
       createdAt: 'desc'

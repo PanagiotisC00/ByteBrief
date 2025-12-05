@@ -77,7 +77,7 @@ model Post {
   author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   tags        PostTag[]
-  comments    Comment[]
+
 
   @@map("posts")
 }
@@ -116,29 +116,4 @@ model PostTag {
   @@map("post_tags")
 }
 
-// Comment model for future functionality
-model Comment {
-  id        String        @id @default(cuid())
-  content   String        @db.Text
-  author    String        // Author name (for non-registered users)
-  email     String        // Author email
-  status    CommentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
 
-  // Foreign keys
-  postId String
-
-  // Relations
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("comments")
-}
-
-// Comment status enum
-enum CommentStatus {
-  PENDING
-  APPROVED
-  SPAM
-  REJECTED
-}

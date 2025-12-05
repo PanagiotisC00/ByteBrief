@@ -48,9 +48,7 @@ type PostWithDetails = {
     name: string
     color: string | null
   }
-  _count: {
-    comments: number
-  }
+
 }
 
 interface PostsTableProps {
@@ -109,7 +107,7 @@ export function PostsTable({ posts }: PostsTableProps) {
             <TableHead>Status</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Author</TableHead>
-            <TableHead>Comments</TableHead>
+
             <TableHead>Published</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -151,7 +149,7 @@ export function PostsTable({ posts }: PostsTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>{post.author.name || post.author.email}</TableCell>
-                <TableCell>{post._count.comments}</TableCell>
+
                 <TableCell>
                   {post.publishedAt ? (
                     format(new Date(post.publishedAt), 'MMM dd, yyyy')

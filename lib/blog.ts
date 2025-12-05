@@ -99,20 +99,7 @@ export async function getPostBySlug(slug: string) {
           }
         }
       },
-      comments: {
-        where: {
-          status: 'APPROVED'
-        },
-        select: {
-          id: true,
-          content: true,
-          author: true,
-          createdAt: true
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      }
+
     }
   })
 
