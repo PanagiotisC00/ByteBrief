@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -58,7 +59,7 @@ export function MarkdownEditor({
                 <TabsContent value="preview" className="m-0">
                     <div className="min-h-[400px] p-4 prose prose-sm dark:prose-invert max-w-none overflow-auto markdown-preview">
                         {value ? (
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                                 {value}
                             </ReactMarkdown>
                         ) : (
@@ -78,3 +79,4 @@ export function MarkdownEditor({
         </div>
     )
 }
+
