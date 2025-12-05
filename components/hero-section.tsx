@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, Clock, User } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, User, Calendar } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import Link from "next/link"
+import { format } from "date-fns"
 
 // Type for latest articles
 type LatestArticle = {
@@ -15,6 +16,7 @@ type LatestArticle = {
   image: string | null
   slug: string
   readTime: number | null
+  publishedAt: Date | null
   author: {
     name: string | null
     avatar: string | null
@@ -32,22 +34,31 @@ interface HeroSectionProps {
 
 export function HeroSection({ featuredArticles }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (featuredArticles.length > 0) {
+    if (featuredArticles.length > 0 && !isPaused) {
       const timer = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % featuredArticles.length)
       }, 5000)
       return () => clearInterval(timer)
     }
-  }, [featuredArticles.length])
+  }, [featuredArticles.length, isPaused])
+
+  const pauseAutoScroll = () => {
+    setIsPaused(true)
+    // Resume auto-scroll after 10 seconds
+    setTimeout(() => setIsPaused(false), 10000)
+  }
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % featuredArticles.length)
+    pauseAutoScroll()
   }
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length)
+    pauseAutoScroll()
   }
 
   // Handle empty articles
@@ -139,7 +150,13 @@ export function HeroSection({ featuredArticles }: HeroSectionProps) {
                         {currentArticle.readTime && (
                           <div className="flex items-center space-x-1">
                             <Clock className="h-4 w-4" />
-                            <span>{currentArticle.readTime} min read</span>
+                            <span>{currentArticle.readTime}m</span>
+                          </div>
+                        )}
+                        {currentArticle.publishedAt && (
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{format(new Date(currentArticle.publishedAt), 'dd/MM/yyyy')}</span>
                           </div>
                         )}
                       </div>

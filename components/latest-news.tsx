@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { User, ArrowRight, Calendar } from "lucide-react"
+import { User, ArrowRight, Calendar, Clock } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -13,6 +13,7 @@ type LatestArticle = {
   excerpt: string | null
   image: string | null
   slug: string
+  readTime: number | null
   publishedAt: Date | null
   author: {
     name: string | null
@@ -101,13 +102,19 @@ export function LatestNews({ articles }: LatestNewsProps) {
                         <User className="h-3 w-3" />
                         <span>{article.author.name || 'ByteBrief Team'}</span>
                       </div>
-                      {article.publishedAt && (
+                      {article.readTime && (
                         <div className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{format(new Date(article.publishedAt), 'dd/MM/yyyy')}</span>
+                          <Clock className="h-3 w-3" />
+                          <span>{article.readTime}m</span>
                         </div>
                       )}
                     </div>
+                    {article.publishedAt && (
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{format(new Date(article.publishedAt), 'dd/MM/yyyy')}</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
