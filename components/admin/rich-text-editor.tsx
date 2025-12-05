@@ -296,13 +296,33 @@ export function RichTextEditor({
           margin-bottom: 0.5rem;
         }
         
-        .ProseMirror ul, .ProseMirror ol {
+        .ProseMirror ul {
           padding-left: 1.5rem;
           margin: 0.75rem 0;
+          list-style-type: disc;
+        }
+        
+        .ProseMirror ol {
+          padding-left: 1.5rem;
+          margin: 0.75rem 0;
+          list-style-type: decimal;
+        }
+        
+        .ProseMirror ul ul {
+          list-style-type: circle;
+        }
+        
+        .ProseMirror ul ul ul {
+          list-style-type: square;
         }
         
         .ProseMirror li {
           margin: 0.25rem 0;
+          display: list-item;
+        }
+        
+        .ProseMirror li p {
+          margin: 0;
         }
         
         .ProseMirror blockquote {

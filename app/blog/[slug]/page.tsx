@@ -269,10 +269,87 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="prose prose-lg prose-slate dark:prose-invert max-w-none">
               {/* Render HTML content from rich text editor */}
               <div
-                className="text-foreground leading-relaxed prose-headings:text-foreground prose-a:text-accent prose-blockquote:border-l-border prose-blockquote:text-muted-foreground"
+                className="blog-content text-foreground leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
             </div>
+
+            {/* Blog content styles */}
+            <style jsx global>{`
+              .blog-content h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+                color: hsl(var(--foreground));
+              }
+              
+              .blog-content h3 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-top: 1.5rem;
+                margin-bottom: 0.75rem;
+                color: hsl(var(--foreground));
+              }
+              
+              .blog-content ul {
+                list-style-type: disc !important;
+                padding-left: 1.5rem !important;
+                margin: 1rem 0;
+              }
+              
+              .blog-content ol {
+                list-style-type: decimal !important;
+                padding-left: 1.5rem !important;
+                margin: 1rem 0;
+              }
+              
+              .blog-content ul ul {
+                list-style-type: circle !important;
+                margin: 0.5rem 0;
+              }
+              
+              .blog-content ul ul ul {
+                list-style-type: square !important;
+              }
+              
+              .blog-content li {
+                margin: 0.5rem 0;
+                display: list-item !important;
+              }
+              
+              .blog-content li p {
+                margin: 0;
+                display: inline;
+              }
+              
+              .blog-content p {
+                margin: 1rem 0;
+              }
+              
+              .blog-content blockquote {
+                border-left: 4px solid hsl(var(--border));
+                padding-left: 1rem;
+                margin: 1.5rem 0;
+                color: hsl(var(--muted-foreground));
+                font-style: italic;
+              }
+              
+              .blog-content a {
+                color: hsl(var(--accent));
+                text-decoration: underline;
+              }
+              
+              .blog-content hr {
+                border: none;
+                border-top: 1px solid hsl(var(--border));
+                margin: 2rem 0;
+              }
+              
+              .blog-content strong {
+                font-weight: 700;
+              }
+            `}</style>
 
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
