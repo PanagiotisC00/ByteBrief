@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/admin/rich-text-editor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -66,7 +67,7 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  
+
   // Initialize form with existing post data
   const [formData, setFormData] = useState({
     title: post.title,
@@ -179,17 +180,13 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
 
               <div>
                 <Label htmlFor="content">Content *</Label>
-                <Textarea
-                  id="content"
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Write your blog post content in Markdown..."
-                  rows={20}
-                  className="font-mono"
-                  required
+                  onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                  placeholder="Write your blog post content here..."
                 />
                 <p className="text-sm text-muted-foreground mt-2">
-                  You can use Markdown formatting (# for headers, **bold**, etc.)
+                  Use the toolbar above to format your content. You can copy-paste from Word with formatting preserved.
                 </p>
               </div>
 
@@ -256,7 +253,7 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
                     <SelectItem key={category.id} value={category.id}>
                       <div className="flex items-center space-x-2">
                         {category.color && (
-                          <div 
+                          <div
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: category.color }}
                           />
@@ -292,7 +289,7 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
                   ))}
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label>Available Tags</Label>
                 <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
@@ -340,12 +337,12 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
           >
             Cancel
           </Button>
-          
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                type="button" 
-                variant="destructive" 
+              <Button
+                type="button"
+                variant="destructive"
                 disabled={isDeleting}
                 className="bg-red-600 hover:bg-red-700 hover:scale-105 hover:shadow-lg text-white hover:text-white transition-all duration-200 cursor-pointer transform"
               >
@@ -369,9 +366,9 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        
-        <Button 
-          type="submit" 
+
+        <Button
+          type="submit"
           disabled={isLoading || !formData.title.trim()}
           className="bg-blue-600 hover:bg-blue-700 hover:scale-105 hover:shadow-lg text-white hover:text-white transition-all duration-200 cursor-pointer transform"
         >

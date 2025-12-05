@@ -22,7 +22,7 @@ interface BlogPostPageProps {
 async function getBlogPost(slug: string) {
   try {
     const post = await prisma.post.findUnique({
-      where: { 
+      where: {
         slug,
         status: 'PUBLISHED' // Only show published posts
       },
@@ -98,7 +98,7 @@ async function getRelatedPosts(categoryId: string, currentPostId: string, limit 
 // Generate dynamic metadata for each blog post
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = await getBlogPost(params.slug)
-  
+
   if (!post) {
     return {
       title: 'Post Not Found',
@@ -122,7 +122,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     ],
     authors: [{ name: post.author.name || 'ByteBrief' }],
     category: post.category.name,
-    
+
     openGraph: {
       type: 'article',
       title: post.title,
@@ -172,7 +172,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getBlogPost(params.slug)
-  
+
   if (!post) {
     notFound()
   }
@@ -199,7 +199,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div className="space-y-6">
               {/* Category Badge */}
               <div>
-                <Badge 
+                <Badge
                   className="text-white"
                   style={{ backgroundColor: post.category.color || '#3B82F6' }}
                 >
@@ -267,10 +267,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="container mx-auto px-4 pb-16">
           <div className="max-w-4xl mx-auto">
             <div className="prose prose-lg prose-slate dark:prose-invert max-w-none">
-              {/* Convert markdown content to HTML here - for now showing as text */}
-              <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-                {post.content}
-              </div>
+              {/* Render HTML content from rich text editor */}
+              <div
+                className="text-foreground leading-relaxed prose-headings:text-foreground prose-a:text-accent prose-blockquote:border-l-border prose-blockquote:text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
             </div>
 
             {/* Tags */}
@@ -340,8 +341,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                             className="w-full h-40 object-contain group-hover:scale-105 transition-transform duration-300"
                           />
                           <div className="absolute top-3 left-3">
-                            <Badge 
-                              variant="secondary" 
+                            <Badge
+                              variant="secondary"
                               className="text-white text-xs"
                               style={{ backgroundColor: relatedPost.category.color || '#3B82F6' }}
                             >
@@ -368,7 +369,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
       </main>
       <Footer />
-      
+
       {/* Structured Data for SEO */}
       <BlogPostStructuredData
         title={post.title}
@@ -381,7 +382,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         categoryName={post.category.name}
         readTime={post.readTime || undefined}
       />
-      
+
       <BreadcrumbStructuredData
         items={[
           { name: 'Home', url: 'https://bytebrief.vercel.app' },
