@@ -3,17 +3,16 @@ import { getCurrentSession } from '@/lib/utils/auth'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, FileText, FolderOpen, Tag, Eye } from 'lucide-react'
+import { PlusCircle, FileText, FolderOpen, Tag } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 
 async function getAdminStats() {
-  const [totalPosts, draftPosts, publishedPosts, totalViews, totalCategories, totalTags, recentPosts] = await Promise.all([
+  const [totalPosts, draftPosts, publishedPosts, totalCategories, totalTags, recentPosts] = await Promise.all([
     prisma.post.count(),
     prisma.post.count({ where: { status: 'DRAFT' } }),
     prisma.post.count({ where: { status: 'PUBLISHED' } }),
-    prisma.post.aggregate({ _sum: { viewCount: true } }),
     prisma.category.count(),
     prisma.tag.count(),
     prisma.post.findMany({
@@ -32,7 +31,6 @@ async function getAdminStats() {
     totalPosts,
     draftPosts,
     publishedPosts,
-    totalViews: totalViews._sum.viewCount || 0,
     totalCategories,
     totalTags,
     recentPosts
@@ -42,11 +40,11 @@ async function getAdminStats() {
 export default async function AdminDashboard() {
   // Check authentication
   const session = await getCurrentSession()
-  
+
   if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
     redirect('/admin/login')
   }
-  
+
   const stats = await getAdminStats()
 
   return (
@@ -65,7 +63,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
@@ -76,17 +74,6 @@ export default async function AdminDashboard() {
             <p className="text-xs text-muted-foreground">
               {stats.publishedPosts} published, {stats.draftPosts} drafts
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Across all published posts</p>
           </CardContent>
         </Card>
 
@@ -151,7 +138,7 @@ export default async function AdminDashboard() {
                 {stats.recentPosts.map((post) => (
                   <div key={post.id} className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <Link 
+                      <Link
                         href={`/admin/posts/${post.id}`}
                         className="text-sm font-medium text-foreground hover:text-accent truncate block"
                       >
@@ -161,11 +148,10 @@ export default async function AdminDashboard() {
                         {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      post.status === 'PUBLISHED' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${post.status === 'PUBLISHED'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                      }`}>
                       {post.status.toLowerCase()}
                     </span>
                   </div>

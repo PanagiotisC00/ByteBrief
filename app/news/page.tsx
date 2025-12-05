@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { NewsPageContent } from "@/components/news-page-content"
-import { getCategories, getTrendingCategories, getPopularPosts } from "@/lib/blog"
+import { getCategories, getTrendingCategories } from "@/lib/blog"
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -39,20 +39,18 @@ export default async function NewsPage({
   searchParams: { category?: string; search?: string }
 }) {
   // Fetch all required data
-  const [categories, trendingCategories, popularPosts] = await Promise.all([
+  const [categories, trendingCategories] = await Promise.all([
     getCategories(),
-    getTrendingCategories(5),
-    getPopularPosts(4)
+    getTrendingCategories(5)
   ])
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <main className="pt-16">
-        <NewsPageContent 
+        <NewsPageContent
           categories={categories}
           trendingCategories={trendingCategories}
-          popularPosts={popularPosts}
           initialCategory={searchParams.category || 'all'}
           initialSearch={searchParams.search || ''}
         />

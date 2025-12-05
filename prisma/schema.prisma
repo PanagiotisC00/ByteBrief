@@ -62,7 +62,7 @@ model Post {
   image       String?     // Featured image URL
   imageAlt    String?     // Alt text for featured image
   status      PostStatus  @default(DRAFT)
-  viewCount   Int         @default(0)
+
   readTime    Int?        // Estimated read time in minutes
   sources     String?     // Source URLs separated by commas
   publishedAt DateTime?

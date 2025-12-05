@@ -116,13 +116,7 @@ export async function getPostBySlug(slug: string) {
     }
   })
 
-  // Increment view count
-  if (post) {
-    await prisma.post.update({
-      where: { id: post.id },
-      data: { viewCount: { increment: 1 } }
-    })
-  }
+  // View count increment removed
 
   return post
 }
@@ -270,7 +264,7 @@ export async function getNewsPosts(categorySlug?: string, searchQuery?: string) 
       publishedAt: 'desc',
     },
   })
-  
+
   return posts
 }
 
@@ -295,32 +289,11 @@ export async function getTrendingCategories(limit = 5) {
     },
     take: limit,
   })
-  
+
   return categories
 }
 
-// Get popular posts (by view count)
-export async function getPopularPosts(limit = 4) {
-  const posts = await prisma.post.findMany({
-    where: {
-      status: PostStatus.PUBLISHED,
-    },
-    include: {
-      author: {
-        select: {
-          name: true,
-          avatar: true,
-        },
-      },
-    },
-    orderBy: {
-      viewCount: 'desc',
-    },
-    take: limit,
-  })
-  
-  return posts
-}
+
 
 // Get related posts (excluding current post)
 export async function getRelatedPosts(categoryId: string, currentPostId: string, limit = 3) {
@@ -352,7 +325,7 @@ export async function getRelatedPosts(categoryId: string, currentPostId: string,
     },
     take: limit,
   })
-  
+
   return relatedPosts
 }
 
@@ -390,13 +363,7 @@ export async function getBlogPost(slug: string) {
     },
   })
 
-  // Increment view count
-  if (post) {
-    await prisma.post.update({
-      where: { id: post.id },
-      data: { viewCount: { increment: 1 } }
-    })
-  }
+  // View count increment removed
 
   return post
 }

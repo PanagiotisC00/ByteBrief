@@ -38,7 +38,6 @@ type PostWithDetails = {
   title: string
   slug: string
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
-  viewCount: number
   publishedAt: Date | null
   createdAt: Date
   author: {
@@ -66,7 +65,7 @@ export function PostsTable({ posts }: PostsTableProps) {
     if (!deletePost) return
 
     setIsDeleting(true)
-    
+
     try {
       const response = await fetch(`/api/admin/posts/${deletePost.id}`, {
         method: 'DELETE'
@@ -110,7 +109,6 @@ export function PostsTable({ posts }: PostsTableProps) {
             <TableHead>Status</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Author</TableHead>
-            <TableHead>Views</TableHead>
             <TableHead>Comments</TableHead>
             <TableHead>Published</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
@@ -128,7 +126,7 @@ export function PostsTable({ posts }: PostsTableProps) {
               <TableRow key={post.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center space-x-2">
-                    <Link 
+                    <Link
                       href={`/admin/posts/${post.id}`}
                       className="hover:text-accent transition-colors"
                     >
@@ -144,7 +142,7 @@ export function PostsTable({ posts }: PostsTableProps) {
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     {post.category.color && (
-                      <div 
+                      <div
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: post.category.color }}
                       />
@@ -153,7 +151,6 @@ export function PostsTable({ posts }: PostsTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>{post.author.name || post.author.email}</TableCell>
-                <TableCell>{post.viewCount.toLocaleString()}</TableCell>
                 <TableCell>{post._count.comments}</TableCell>
                 <TableCell>
                   {post.publishedAt ? (
@@ -204,14 +201,14 @@ export function PostsTable({ posts }: PostsTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Post</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletePost?.title}"? 
+              Are you sure you want to delete "{deletePost?.title}"?
               This action cannot be undone and will permanently remove the post and all its data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
+            <AlertDialogAction
+              onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive hover:bg-destructive/90"
             >

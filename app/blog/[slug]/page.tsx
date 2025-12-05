@@ -3,10 +3,10 @@ import { Footer } from "@/components/footer"
 import { prisma } from "@/lib/prisma"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, User, Eye, ArrowLeft } from "lucide-react"
+import { Calendar, Clock, User, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { format } from "date-fns"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { BlogPostStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data"
@@ -228,7 +228,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>
-                      {formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })}
+                      {format(new Date(post.publishedAt), 'dd/MM/yyyy')}
                     </span>
                   </div>
                 )}
@@ -238,12 +238,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     <span>{post.readTime} min read</span>
                   </div>
                 )}
-                {post.viewCount && (
-                  <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-2" />
-                    <span>{post.viewCount.toLocaleString()} views</span>
-                  </div>
-                )}
+
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Calendar, Clock, User, Eye } from "lucide-react"
+import { Calendar, Clock, User } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import type { Metadata } from 'next'
@@ -135,8 +135,8 @@ export default async function BlogPage() {
                             className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
                           />
                           <div className="absolute top-4 left-4 flex items-center space-x-2">
-                            <Badge 
-                              variant="secondary" 
+                            <Badge
+                              variant="secondary"
                               className="text-white"
                               style={{ backgroundColor: post.category.color || '#3B82F6' }}
                             >
@@ -175,12 +175,7 @@ export default async function BlogPage() {
                               </div>
                             )}
                           </div>
-                          {post.viewCount && (
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <Eye className="h-3 w-3 mr-1" />
-                              <span>{post.viewCount.toLocaleString()} views</span>
-                            </div>
-                          )}
+
                         </CardContent>
                       </Card>
                     </Link>
@@ -199,8 +194,8 @@ export default async function BlogPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {categories.map((category) => (
-                      <Link 
-                        key={category.id} 
+                      <Link
+                        key={category.id}
                         href={`/category/${category.slug}`}
                         className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors"
                       >

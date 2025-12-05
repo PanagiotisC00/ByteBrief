@@ -26,17 +26,7 @@ type TrendingCategory = {
   }
 }
 
-type PopularPost = {
-  id: string
-  title: string
-  slug: string
-  viewCount: number
-  readTime: number | null
-  author: {
-    name: string | null
-    avatar: string | null
-  }
-}
+
 
 type NewsPost = {
   id: string
@@ -68,7 +58,6 @@ type NewsPost = {
 interface NewsPageContentProps {
   categories: Category[]
   trendingCategories: TrendingCategory[]
-  popularPosts: PopularPost[]
   initialCategory: string
   initialSearch: string
 }
@@ -76,7 +65,6 @@ interface NewsPageContentProps {
 export function NewsPageContent({
   categories,
   trendingCategories,
-  popularPosts,
   initialCategory,
   initialSearch
 }: NewsPageContentProps) {
@@ -205,7 +193,6 @@ export function NewsPageContent({
           <div className="lg:col-span-1 lg:order-2">
             <NewsSidebar
               trendingCategories={trendingCategories}
-              popularPosts={popularPosts}
             />
           </div>
           {/* Show main content second on mobile, first on desktop */}

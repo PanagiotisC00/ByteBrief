@@ -15,10 +15,9 @@ type TrendingCategory = {
 
 interface NewsSidebarProps {
   trendingCategories: TrendingCategory[]
-  popularPosts?: unknown[] // kept for backwards compatibility
 }
 
-export function NewsSidebar({ trendingCategories, popularPosts }: NewsSidebarProps) {
+export function NewsSidebar({ trendingCategories }: NewsSidebarProps) {
   return (
     <div className="space-y-6">
       {/* Trending Topics */}
