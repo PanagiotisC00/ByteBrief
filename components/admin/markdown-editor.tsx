@@ -5,6 +5,9 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -43,7 +46,7 @@ export function MarkdownEditor({
                         </TabsTrigger>
                     </TabsList>
                     <span className="text-xs text-muted-foreground">
-                        Markdown supported
+                        Markdown + LaTeX supported
                     </span>
                 </div>
 
@@ -59,7 +62,10 @@ export function MarkdownEditor({
                 <TabsContent value="preview" className="m-0">
                     <div className="min-h-[400px] p-4 prose prose-sm dark:prose-invert max-w-none overflow-auto markdown-preview">
                         {value ? (
-                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm, remarkBreaks, [remarkMath, { singleDollarTextMath: false }]]}
+                                rehypePlugins={[rehypeKatex]}
+                            >
                                 {value}
                             </ReactMarkdown>
                         ) : (
@@ -73,10 +79,9 @@ export function MarkdownEditor({
             {activeTab === 'write' && (
                 <div className="border-t border-input bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                     <span className="font-medium">Tip:</span>{' '}
-                    **bold** | *italic* | # Heading | - bullet | 1. numbered | [link](url) | `code`
+                    **bold** | *italic* | # Heading | - bullet | $$math$$
                 </div>
             )}
         </div>
     )
 }
-
