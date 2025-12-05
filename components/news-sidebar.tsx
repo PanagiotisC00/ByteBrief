@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Clock, User, Eye } from "lucide-react"
+import { TrendingUp } from "lucide-react"
 import Link from "next/link"
 
 type TrendingCategory = {
@@ -13,21 +13,9 @@ type TrendingCategory = {
   }
 }
 
-type PopularPost = {
-  id: string
-  title: string
-  slug: string
-  viewCount: number
-  readTime: number | null
-  author: {
-    name: string | null
-    avatar: string | null
-  }
-}
-
 interface NewsSidebarProps {
   trendingCategories: TrendingCategory[]
-  popularPosts: PopularPost[]
+  popularPosts?: unknown[] // kept for backwards compatibility
 }
 
 export function NewsSidebar({ trendingCategories, popularPosts }: NewsSidebarProps) {
@@ -58,54 +46,6 @@ export function NewsSidebar({ trendingCategories, popularPosts }: NewsSidebarPro
             ))
           ) : (
             <p className="text-sm text-muted-foreground">No trending categories yet.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Popular Articles */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-foreground">
-            <TrendingUp className="h-5 w-5 text-accent" />
-            <span>Popular This Week</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {popularPosts.length > 0 ? (
-            popularPosts.map((article, index) => (
-              <div key={article.id} className="space-y-2">
-                <div className="flex items-start space-x-3">
-                  <span className="text-2xl font-bold text-accent/50">{index + 1}</span>
-                  <div className="flex-1 space-y-1">
-                    <Link
-                      href={`/blog/${article.slug}`}
-                      className="text-sm font-medium text-card-foreground hover:text-accent transition-colors line-clamp-2"
-                    >
-                      {article.title}
-                    </Link>
-                    <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{article.author.name || 'ByteBrief Team'}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Eye className="h-3 w-3" />
-                        <span>{article.viewCount.toLocaleString()} views</span>
-                      </div>
-                      {article.readTime && (
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{article.readTime} min</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {index < popularPosts.length - 1 && <div className="border-b border-border" />}
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">No popular articles yet.</p>
           )}
         </CardContent>
       </Card>

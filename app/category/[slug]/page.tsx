@@ -56,7 +56,7 @@ async function getCategoryWithPosts(slug: string) {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const category = await getCategoryWithPosts(params.slug)
-  
+
   if (!category) {
     notFound()
   }
@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <main className="pt-16">
         {/* Back Button */}
         <div className="container mx-auto px-4 py-6">
-          <Link href="/blog">
+          <Link href="/news">
             <Button variant="ghost" className="mb-6">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to All Articles
@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Category Header */}
         <div className="container mx-auto px-4 py-16">
           <div className="text-center space-y-4">
-            <Badge 
+            <Badge
               className="text-white text-lg px-4 py-2"
               style={{ backgroundColor: category.color || '#3B82F6' }}
             >
@@ -104,7 +104,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">No articles in this category yet.</p>
               <p className="text-muted-foreground mt-2">Check back soon for new content!</p>
-              <Link href="/blog" className="mt-4 inline-block">
+              <Link href="/news" className="mt-4 inline-block">
                 <Button>Browse All Articles</Button>
               </Link>
             </div>
@@ -120,8 +120,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                         className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute top-4 left-4 flex items-center space-x-2">
-                        <Badge 
-                          variant="secondary" 
+                        <Badge
+                          variant="secondary"
                           className="text-white"
                           style={{ backgroundColor: post.category.color || '#3B82F6' }}
                         >
@@ -176,7 +176,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CategoryPageProps) {
   const category = await getCategoryWithPosts(params.slug)
-  
+
   if (!category) {
     return {
       title: 'Category Not Found - ByteBrief'

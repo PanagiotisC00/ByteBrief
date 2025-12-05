@@ -1,9 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, Calendar } from "lucide-react"
+import { Search, ArrowUpDown, ArrowDown, ArrowUp, Layers } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type Category = {
   id: string
@@ -12,20 +17,32 @@ type Category = {
   color: string | null
 }
 
+export type SortOption = 'date-desc' | 'date-asc' | 'topic'
+
 interface NewsHeaderProps {
   categories: Category[]
   onCategoryChange: (categorySlug: string) => void
   onSearchChange: (searchQuery: string) => void
+  onSortChange: (sort: SortOption) => void
   selectedCategory: string
   searchQuery: string
+  sortBy: SortOption
 }
 
-export function NewsHeader({ 
-  categories, 
-  onCategoryChange, 
-  onSearchChange, 
-  selectedCategory, 
-  searchQuery 
+const sortLabels: Record<SortOption, string> = {
+  'date-desc': 'Latest First',
+  'date-asc': 'Oldest First',
+  'topic': 'By Topic'
+}
+
+export function NewsHeader({
+  categories,
+  onCategoryChange,
+  onSearchChange,
+  onSortChange,
+  selectedCategory,
+  searchQuery,
+  sortBy
 }: NewsHeaderProps) {
 
   return (
@@ -84,19 +101,34 @@ export function NewsHeader({
             ))}
           </div>
 
-          {/* Filter Options */}
-          <div className="flex items-center justify-center space-x-4 text-sm">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-accent">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-accent">
-              <Calendar className="h-4 w-4 mr-2" />
-              Sort by Date
-            </Button>
+          {/* Sort Options - visually distinct */}
+          <div className="flex items-center justify-center pt-4 border-t border-border/50">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-accent hover:text-accent hover:bg-accent/10 font-medium min-w-[160px]">
+                  <ArrowUpDown className="h-4 w-4 mr-2" />
+                  Sort: {sortLabels[sortBy]}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                <DropdownMenuItem onClick={() => onSortChange('date-desc')}>
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  Latest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('date-asc')}>
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  Oldest First
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('topic')}>
+                  <Layers className="h-4 w-4 mr-2" />
+                  By Topic
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
     </section>
   )
 }
+
