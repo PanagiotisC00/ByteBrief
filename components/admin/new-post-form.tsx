@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RichTextEditor } from '@/components/admin/rich-text-editor'
+import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { X, Plus } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/image-upload'
 
@@ -39,6 +41,7 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [editorMode, setEditorMode] = useState<'richtext' | 'markdown'>('richtext')
 
   // Form state
   const [formData, setFormData] = useState({
@@ -126,15 +129,28 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="content">Content *</Label>
-                <RichTextEditor
-                  value={formData.content}
-                  onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
-                  placeholder="Write your blog post content here..."
-                />
-                <p className="text-sm text-muted-foreground mt-2">
-                  Use the toolbar above to format your content. You can copy-paste from Word with formatting preserved.
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="content">Content *</Label>
+                  <Tabs value={editorMode} onValueChange={(v) => setEditorMode(v as 'richtext' | 'markdown')}>
+                    <TabsList className="h-8">
+                      <TabsTrigger value="richtext" className="text-xs px-3 h-7">Rich Text</TabsTrigger>
+                      <TabsTrigger value="markdown" className="text-xs px-3 h-7">Markdown</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                {editorMode === 'richtext' ? (
+                  <RichTextEditor
+                    value={formData.content}
+                    onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                    placeholder="Write your blog post content here..."
+                  />
+                ) : (
+                  <MarkdownEditor
+                    value={formData.content}
+                    onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                    placeholder="Write your blog post content in Markdown..."
+                  />
+                )}
               </div>
 
               <div>

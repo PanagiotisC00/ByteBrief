@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { BlogPostStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data"
+import { BlogContent } from "@/components/blog-content"
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -267,11 +268,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="container mx-auto px-4 pb-16">
           <div className="max-w-4xl mx-auto">
             <div className="prose prose-lg prose-slate dark:prose-invert max-w-none">
-              {/* Render HTML content from rich text editor */}
-              <div
-                className="blog-content text-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+              {/* Auto-detect and render HTML or Markdown content */}
+              <BlogContent content={post.content} />
             </div>
 
             {/* Tags */}

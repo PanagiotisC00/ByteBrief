@@ -203,3 +203,43 @@
 .blog-content strong {
   font-weight: 700;
 }
+
+/* Markdown preview styles */
+.markdown-preview ul,
+.markdown-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+}
+
+.markdown-preview ol,
+.markdown-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+}
+
+.markdown-preview li,
+.markdown-content li {
+  display: list-item !important;
+}
+
+.markdown-preview code,
+.markdown-content code {
+  background-color: var(--muted);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.markdown-preview pre,
+.markdown-content pre {
+  background-color: var(--muted);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.markdown-preview pre code,
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+}
