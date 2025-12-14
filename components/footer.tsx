@@ -18,7 +18,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 export function Footer() {
   const socialLinks = [
     { icon: Mail, href: "mailto:bytebriefblog@gmail.com", label: "Email" },
-    { icon: XIcon, href: "/coming-soon", label: "X" },
+    { icon: XIcon, href: "https://x.com/ByteBriefTech", label: "X" },
     { icon: InstagramIcon, href: "/coming-soon", label: "Instagram" },
   ]
 

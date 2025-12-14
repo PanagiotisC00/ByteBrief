@@ -50,23 +50,19 @@ export function ContactHero() {
               <p className="text-white/80 transition-all duration-500">bytebriefblog@gmail.com</p>
             </a>
 
-            {/* X (Twitter) - Clickable link to coming soon */}
-            <Link
-              href="/coming-soon"
+            {/* X (Twitter) - Clickable link to X account */}
+            <a
+              href="https://x.com/ByteBriefTech"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-center space-y-4 p-6 rounded-lg hover:bg-gradient-to-br hover:from-accent/10 hover:to-accent/5 hover:shadow-lg hover:scale-105 transition-all duration-500 group cursor-pointer border border-transparent hover:border-accent/30"
             >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 border border-accent/20 group-hover:bg-accent/30 group-hover:border-accent/40 group-hover:shadow-lg transition-all duration-500">
                 <XIcon className="h-8 w-8 text-accent group-hover:scale-125 group-hover:text-white transition-all duration-500" />
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <h3 className="text-xl font-semibold text-foreground group-hover:text-accent group-hover:scale-105 transition-all duration-500">X</h3>
-                <div className="inline-flex items-center px-2 py-1 rounded-full bg-accent/10 border border-accent/20 group-hover:bg-accent/20 group-hover:border-accent/30 transition-all duration-500">
-                  <Clock className="h-3 w-3 text-accent mr-1 group-hover:scale-110 transition-all duration-500" />
-                  <span className="text-accent text-xs font-medium">Coming Soon</span>
-                </div>
-              </div>
-              <p className="text-muted-foreground group-hover:text-accent/80 transition-all duration-500">Follow us for tech updates and news</p>
-            </Link>
+              <h3 className="text-xl font-semibold text-foreground group-hover:text-accent group-hover:scale-105 transition-all duration-500">X</h3>
+              <p className="text-muted-foreground group-hover:text-accent/80 transition-all duration-500">@ByteBriefTech</p>
+            </a>
 
             {/* Instagram - Clickable link to coming soon */}
             <Link

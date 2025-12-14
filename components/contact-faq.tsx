@@ -33,7 +33,7 @@ const faqs = [
   {
     question: "How do I stay updated with ByteBrief's latest content?",
     answer:
-      "Currently, the best way to stay updated is by bookmarking our website and visiting regularly. We're working on social media channels (X and Instagram) that will be available soon for additional updates and engagement.",
+      "You can stay updated by bookmarking our website and visiting regularly, or by following us on X (Twitter) at @ByteBriefTech for the latest tech news and updates. We're also working on Instagram which will be available soon for additional content and engagement.",
   },
 ]
 

@@ -18,7 +18,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 )
 
 const socialLinks = [
-  { icon: XIcon, href: "/coming-soon", label: "X", handle: "@bytebrief", isComingSoon: true },
+  { icon: XIcon, href: "https://x.com/ByteBriefTech", label: "X", handle: "@ByteBriefTech", isComingSoon: false },
   { icon: InstagramIcon, href: "/coming-soon", label: "Instagram", handle: "@bytebrief", isComingSoon: true },
 ]
 
