@@ -9,21 +9,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useMemo } from 'react'
 
-export function NewTagForm() {
+type NewTagMode = 'page' | 'dialog'
+
+interface NewTagFormProps {
+  mode?: NewTagMode
+  onCreated?: (tag: { id: string; name: string; slug: string }) => void
+  onCancel?: () => void
+}
+
+export function NewTagForm({ mode = 'page', onCreated, onCancel }: NewTagFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
   })
 
-  const generateSlug = (name: string) => {
+  const generateSlug = useMemo(() => (name: string) => {
     return name
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '')
-  }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,6 +58,14 @@ export function NewTagForm() {
       }
 
       toast.success('Tag created successfully')
+
+      if (mode === 'dialog') {
+        const tag = await response.json()
+        onCreated?.(tag)
+        setIsLoading(false)
+        return
+      }
+
       router.push('/admin/tags')
     } catch (error) {
       console.error('Error creating tag:', error)
@@ -60,14 +77,16 @@ export function NewTagForm() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Button variant="ghost" asChild>
-          <Link href="/admin/tags">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Tags
-          </Link>
-        </Button>
-      </div>
+      {mode === 'page' && (
+        <div>
+          <Button variant="ghost" asChild>
+            <Link href="/admin/tags">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Tags
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -100,14 +119,25 @@ export function NewTagForm() {
               >
                 {isLoading ? 'Creating...' : 'Create Tag'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
-                asChild
-              >
-                <Link href="/admin/tags">Cancel</Link>
-              </Button>
+              {mode === 'page' ? (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
+                  asChild
+                >
+                  <Link href="/admin/tags">Cancel</Link>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>

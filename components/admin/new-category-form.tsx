@@ -10,8 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useMemo } from 'react'
 
-export function NewCategoryForm() {
+type NewCategoryMode = 'page' | 'dialog'
+
+interface NewCategoryFormProps {
+  mode?: NewCategoryMode
+  onCreated?: (category: {
+    id: string
+    name: string
+    slug: string
+    color: string | null
+    description: string | null
+    icon: string | null
+  }) => void
+  onCancel?: () => void
+}
+
+export function NewCategoryForm({ mode = 'page', onCreated, onCancel }: NewCategoryFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -21,13 +37,13 @@ export function NewCategoryForm() {
     icon: 'FolderOpen'
   })
 
-  const generateSlug = (name: string) => {
+  const generateSlug = useMemo(() => (name: string) => {
     return name
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '')
-  }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +69,15 @@ export function NewCategoryForm() {
       }
 
       toast.success('Category created successfully')
+
+      // In dialog mode, return the created category to the caller instead of redirecting
+      if (mode === 'dialog') {
+        const category = await response.json()
+        onCreated?.(category)
+        setIsLoading(false)
+        return
+      }
+
       router.push('/admin/categories')
     } catch (error) {
       console.error('Error creating category:', error)
@@ -64,14 +89,16 @@ export function NewCategoryForm() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Button variant="ghost" asChild>
-          <Link href="/admin/categories">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Categories
-          </Link>
-        </Button>
-      </div>
+      {mode === 'page' && (
+        <div>
+          <Button variant="ghost" asChild>
+            <Link href="/admin/categories">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Categories
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -140,14 +167,25 @@ export function NewCategoryForm() {
               >
                 {isLoading ? 'Creating...' : 'Create Category'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
-                asChild
-              >
-                <Link href="/admin/categories">Cancel</Link>
-              </Button>
+              {mode === 'page' ? (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
+                  asChild
+                >
+                  <Link href="/admin/categories">Cancel</Link>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>

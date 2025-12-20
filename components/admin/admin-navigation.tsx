@@ -67,7 +67,7 @@ export function AdminNavigation() {
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <Button asChild variant="ghost" size="sm">
-              <Link href="/">View Site</Link>
+              <Link href="/" target="_blank" rel="noopener noreferrer">View Site</Link>
             </Button>
             
             <DropdownMenu>
@@ -130,6 +130,8 @@ export function AdminNavigation() {
               <div className="pt-3 border-t border-border space-y-2">
                 <Link
                   href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted/50 transition-colors font-medium"
                 >

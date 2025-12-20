@@ -1,9 +1,7 @@
 // NextAuth configuration for ByteBrief admin authentication
 import { NextAuthOptions } from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from './prisma'
-import { compare } from 'bcryptjs'
 import type { UserRole } from '@prisma/client'
 
 declare module 'next-auth' {
@@ -57,42 +55,6 @@ export const authOptions: NextAuthOptions = {
           scope: 'email profile', // Minimal scopes to reduce header size
         }
       }
-    }),
-    
-    // Email/password authentication
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
-
-        if (!user || !user.password) {
-          return null
-        }
-
-        const isValid = await compare(credentials.password, user.password)
-
-        if (!isValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          avatar: user.avatar
-        }
-      }
     })
   ],
   
@@ -102,6 +64,7 @@ export const authOptions: NextAuthOptions = {
   
   callbacks: {
     async signIn({ user, account, profile }) {
+      // Clearance: enforce Google-only admin login and email allowlist
       if (account?.provider === 'google') {
         // Check if user is authorized admin
         const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || []
@@ -146,6 +109,10 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
+      if (account && account.provider !== 'google') {
+        return false
+      }
+
       return true
     },
 

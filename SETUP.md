@@ -119,6 +119,7 @@ Your blog should now be running at `http://localhost:3000`!
 1. Visit `http://localhost:3000/admin/login`
 2. Sign in with Google using an email from your `ADMIN_EMAILS` list
 3. You'll be redirected to the admin dashboard
+4. Admin login is Google-only; password/credentials login is disabled—only emails in `ADMIN_EMAILS` can access
 
 ## 📝 Content Management
 

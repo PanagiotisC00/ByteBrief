@@ -39,7 +39,7 @@ export async function PUT(
       )
     }
 
-    // Check if post exists
+    // Check if post exists (capture old slug for cache invalidation)
     const existingPost = await prisma.post.findUnique({
       where: { id: params.id },
       include: { tags: true }
@@ -50,6 +50,7 @@ export async function PUT(
     }
 
     // Generate new slug if title changed
+    const oldSlug = existingPost.slug
     const slug = title !== existingPost.title 
       ? await generateSlug(title, params.id)
       : existingPost.slug
@@ -113,12 +114,15 @@ export async function PUT(
       }
     })
 
-    // Revalidate relevant pages
+    // Revalidate relevant pages (old + new slug to avoid duplicate/stale pages)
     revalidatePath('/admin/posts')
     revalidatePath('/admin')
     revalidatePath('/')  // Homepage
     revalidatePath('/blog')
     revalidatePath(`/blog/${post.slug}`)
+    if (oldSlug !== post.slug) {
+      revalidatePath(`/blog/${oldSlug}`)
+    }
     revalidatePath('/news')
 
     return NextResponse.json(post)

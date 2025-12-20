@@ -13,16 +13,23 @@ interface BlogContentProps {
 }
 
 export function BlogContent({ content }: BlogContentProps) {
+    const normalized = content.trim()
+
+    // If content is empty/whitespace, render nothing to avoid empty paragraphs
+    if (!normalized) {
+        return null
+    }
+
     // Auto-detect if content is HTML (from rich text editor)
     // Check for common HTML tags that TipTap generates
-    const isHTML = /<(p|div|h[1-6]|ul|ol|li|blockquote|strong|em|a|br)\b[^>]*>/i.test(content)
+    const isHTML = /<(p|div|h[1-6]|ul|ol|li|blockquote|strong|em|a|br)\b[^>]*>/i.test(normalized)
 
     if (isHTML) {
         // Render as HTML (from rich text editor)
         return (
             <div
                 className="blog-content text-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: content }}
+                dangerouslySetInnerHTML={{ __html: normalized }}
             />
         )
     }
@@ -34,7 +41,7 @@ export function BlogContent({ content }: BlogContentProps) {
                 remarkPlugins={[remarkGfm, remarkBreaks, [remarkMath, { singleDollarTextMath: false }]]}
                 rehypePlugins={[rehypeKatex]}
             >
-                {content}
+                {normalized}
             </ReactMarkdown>
         </div>
     )

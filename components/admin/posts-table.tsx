@@ -1,7 +1,7 @@
 // Posts management table component
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -30,8 +30,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Eye, Edit, Trash2, MoreHorizontal } from 'lucide-react'
+import { Eye, Edit, Trash2, MoreHorizontal, ArrowDownUp } from 'lucide-react'
 import { toast } from 'sonner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 type PostWithDetails = {
   id: string
@@ -40,6 +41,7 @@ type PostWithDetails = {
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   publishedAt: Date | null
   createdAt: Date
+  updatedAt: Date
   author: {
     name: string | null
     email: string
@@ -58,6 +60,8 @@ interface PostsTableProps {
 export function PostsTable({ posts }: PostsTableProps) {
   const [deletePost, setDeletePost] = useState<PostWithDetails | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [sortKey, setSortKey] = useState<'updatedAt' | 'status' | 'category'>('updatedAt')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
   const handleDelete = async () => {
     if (!deletePost) return
@@ -98,35 +102,104 @@ export function PostsTable({ posts }: PostsTableProps) {
     }
   }
 
+  const statusRank: Record<string, number> = {
+    PUBLISHED: 3,
+    DRAFT: 2,
+    ARCHIVED: 1
+  }
+
+  const sortedPosts = useMemo(() => {
+    const direction = sortDir === 'asc' ? 1 : -1
+    return [...posts].sort((a, b) => {
+      if (sortKey === 'updatedAt') {
+        const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : -Infinity
+        const bDate = b.updatedAt ? new Date(b.updatedAt).getTime() : -Infinity
+        return (aDate - bDate) * direction
+      }
+
+      if (sortKey === 'status') {
+        const aRank = statusRank[a.status] ?? 0
+        const bRank = statusRank[b.status] ?? 0
+        return (aRank - bRank) * direction
+      }
+
+      if (sortKey === 'category') {
+        const aName = a.category.name.toLowerCase()
+        const bName = b.category.name.toLowerCase()
+        if (aName < bName) return -1 * direction
+        if (aName > bName) return 1 * direction
+        return 0
+      }
+
+      return 0
+    })
+  }, [posts, sortDir, sortKey])
+
   return (
     <div className="rounded-md border">
-      <Table>
+
+      {/* Sort toolbar (client-side display sorting only) */}
+      <div className="flex flex-wrap items-center gap-3 p-3 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Sort by</span>
+          <Select value={sortKey} onValueChange={(v) => setSortKey(v as typeof sortKey)}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updatedAt">Last updated</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Direction</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+            className={`inline-flex items-center gap-2 border ${
+              sortDir === 'desc'
+                ? 'hover:bg-green-100 hover:text-green-800 border-green-200 dark:hover:bg-green-900/50 dark:hover:text-green-100'
+                : 'hover:bg-green-100 hover:text-green-800 border-green-200 dark:hover:bg-green-900/50 dark:hover:text-green-100'
+            }`}
+          >
+            <ArrowDownUp className="h-4 w-4" />
+            {sortDir === 'asc' ? 'Asc' : 'Desc'}
+          </Button>
+        </div>
+      </div>
+
+      <Table className="w-full table-fixed">
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Author</TableHead>
-
-            <TableHead>Published</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="px-4 w-[32%]">Title</TableHead>
+            <TableHead className="px-4 w-[12%]">Status</TableHead>
+            <TableHead className="px-4 w-[16%]">Category</TableHead>
+            <TableHead className="px-4 w-[18%]">Author</TableHead>
+            <TableHead className="px-4 w-[14%]">Published</TableHead>
+            <TableHead className="px-4 w-[8%] text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {posts.length === 0 ? (
+          {sortedPosts.length === 0 ? (
             <TableRow>
               <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                 No posts found. Create your first post to get started.
               </TableCell>
             </TableRow>
           ) : (
-            posts.map((post) => (
+            sortedPosts.map((post) => (
               <TableRow key={post.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center space-x-2">
                     <Link
                       href={`/admin/posts/${post.id}`}
-                      className="hover:text-accent transition-colors"
+                      className="hover:text-accent transition-colors line-clamp-1"
+                      title={post.title}
                     >
                       {post.title}
                     </Link>

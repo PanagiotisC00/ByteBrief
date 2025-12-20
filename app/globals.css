@@ -326,3 +326,53 @@
 .markdown-content strong {
   font-weight: 700;
 }
+
+/* Markdown table styling for preview and rendered content */
+.markdown-preview table,
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  overflow: hidden;
+}
+
+.markdown-preview thead,
+.markdown-content thead {
+  background-color: var(--muted);
+}
+
+.markdown-preview th,
+.markdown-content th,
+.markdown-preview td,
+.markdown-content td {
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-preview th,
+.markdown-content th {
+  font-weight: 700;
+}
+
+.markdown-preview tbody tr:nth-child(odd),
+.markdown-content tbody tr:nth-child(odd) {
+  background-color: color-mix(in srgb, var(--muted) 35%, transparent);
+}
+
+.markdown-preview tbody tr:hover,
+.markdown-content tbody tr:hover {
+  background-color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.markdown-preview table {
+  overflow-x: auto;
+  display: block;
+}
+
+.markdown-content table {
+  overflow-x: auto;
+  display: block;
+}

@@ -36,6 +36,8 @@ export function RichTextEditor({
     className
 }: RichTextEditorProps) {
     const editor = useEditor({
+        // Clearance: disable immediate SSR render to avoid hydration mismatch errors in Next.js
+        immediatelyRender: false,
         extensions: [
             StarterKit.configure({
                 heading: {
