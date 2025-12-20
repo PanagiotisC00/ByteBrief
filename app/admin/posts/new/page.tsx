@@ -24,10 +24,9 @@ export default async function NewPostPage() {
     redirect('/admin/login')
   }
 
-  const [categories, tags] = await Promise.all([
-    getCategories(),
-    getTags()
-  ])
+  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  const categories = await getCategories()
+  const tags = await getTags()
 
   return (
     <div className="container mx-auto px-4 py-8">

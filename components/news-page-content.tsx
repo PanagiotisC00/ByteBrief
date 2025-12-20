@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { NewsHeader, SortOption } from '@/components/news-header'
 import { NewsGrid } from '@/components/news-grid'
@@ -70,6 +70,7 @@ export function NewsPageContent({
 }: NewsPageContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const fetchControllerRef = useRef<AbortController | null>(null)
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [searchQuery, setSearchQuery] = useState(initialSearch)
@@ -83,6 +84,10 @@ export function NewsPageContent({
   }, [selectedCategory, searchQuery])
 
   const fetchPosts = async () => {
+    // Cancel any in-flight request so we don't spam the server/DB with parallel queries
+    fetchControllerRef.current?.abort()
+    const controller = new AbortController()
+    fetchControllerRef.current = controller
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -95,7 +100,7 @@ export function NewsPageContent({
         params.set('search', searchQuery.trim())
       }
 
-      const response = await fetch(`/api/news?${params.toString()}`)
+      const response = await fetch(`/api/news?${params.toString()}`, { signal: controller.signal })
 
       if (!response.ok) {
         throw new Error('Failed to fetch posts')
@@ -104,10 +109,15 @@ export function NewsPageContent({
       const fetchedPosts = await response.json()
       setPosts(fetchedPosts)
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return
+      }
       console.error('Failed to fetch posts:', error)
       setPosts([])
     } finally {
-      setLoading(false)
+      if (fetchControllerRef.current === controller) {
+        setLoading(false)
+      }
     }
   }
 
@@ -159,17 +169,7 @@ export function NewsPageContent({
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query)
-
-    // Update URL params
-    const params = new URLSearchParams(searchParams.toString())
-    if (query.trim() === '') {
-      params.delete('search')
-    } else {
-      params.set('search', query)
-    }
-
-    const url = params.toString() ? `/news?${params.toString()}` : '/news'
-    router.push(url, { scroll: false })
+    // Clearance: avoid pushing to /news on every keystroke (prevents extra server renders + DB load)
   }
 
   const handleSortChange = (sort: SortOption) => {

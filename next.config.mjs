@@ -3,6 +3,17 @@ const nextConfig = {
   // Production-ready configuration for ByteBrief blog
   output: 'standalone',
   
+  // In dev, ignore debug log file changes to prevent HMR thrash when instrumentation writes logs
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ...(config.watchOptions || {}),
+        ignored: ['**/.cursor/debug.log']
+      }
+    }
+    return config
+  },
+  
   // Image optimization configuration
   images: {
     remotePatterns: [

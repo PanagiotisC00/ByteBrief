@@ -92,10 +92,9 @@ async function getCategories() {
 }
 
 export default async function BlogPage() {
-  const [posts, categories] = await Promise.all([
-    getBlogPosts(),
-    getCategories()
-  ])
+  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  const posts = await getBlogPosts()
+  const categories = await getCategories()
 
   return (
     <div className="min-h-screen bg-background">

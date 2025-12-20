@@ -59,11 +59,10 @@ export default async function EditPostPage({ params }: { params: { id: string } 
     redirect('/admin/login')
   }
 
-  const [post, categories, tags] = await Promise.all([
-    getPost(params.id),
-    getCategories(),
-    getTags()
-  ])
+  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  const post = await getPost(params.id)
+  const categories = await getCategories()
+  const tags = await getTags()
 
   if (!post) {
     notFound()

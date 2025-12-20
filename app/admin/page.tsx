@@ -9,23 +9,22 @@ import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 
 async function getAdminStats() {
-  const [totalPosts, draftPosts, publishedPosts, totalCategories, totalTags, recentPosts] = await Promise.all([
-    prisma.post.count(),
-    prisma.post.count({ where: { status: 'DRAFT' } }),
-    prisma.post.count({ where: { status: 'PUBLISHED' } }),
-    prisma.category.count(),
-    prisma.tag.count(),
-    prisma.post.findMany({
-      take: 5,
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        updatedAt: true,
-      }
-    })
-  ])
+  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  const totalPosts = await prisma.post.count()
+  const draftPosts = await prisma.post.count({ where: { status: 'DRAFT' } })
+  const publishedPosts = await prisma.post.count({ where: { status: 'PUBLISHED' } })
+  const totalCategories = await prisma.category.count()
+  const totalTags = await prisma.tag.count()
+  const recentPosts = await prisma.post.findMany({
+    take: 5,
+    orderBy: { updatedAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      updatedAt: true,
+    }
+  })
 
   return {
     totalPosts,

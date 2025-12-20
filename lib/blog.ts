@@ -2,6 +2,14 @@
 import { prisma } from './prisma'
 import { PostStatus } from '@prisma/client'
 
+// Dedupe/caching to reduce concurrent Prisma load (important for pooler/serverless stability)
+const CATEGORIES_CACHE_TTL_MS = 30_000
+let categoriesCache: any[] | null = null
+let categoriesCacheExpiresAt = 0
+let categoriesPromise: Promise<any[]> | null = null
+
+const newsPostsInFlight = new Map<string, Promise<any>>()
+
 // Get published posts for public display
 export async function getPublishedPosts(limit?: number) {
   return await prisma.post.findMany({
@@ -141,22 +149,46 @@ export async function getPostsByCategory(categorySlug: string, limit?: number) {
 
 // Get all categories with post counts
 export async function getCategories() {
-  return await prisma.category.findMany({
-    include: {
-      _count: {
-        select: {
-          posts: {
-            where: {
-              status: PostStatus.PUBLISHED
+  const now = Date.now()
+  if (categoriesCache && now < categoriesCacheExpiresAt) {
+    return categoriesCache
+  }
+  if (categoriesPromise) {
+    return categoriesPromise
+  }
+
+  categoriesPromise = (async () => {
+    try {
+      return await prisma.category.findMany({
+        include: {
+          _count: {
+            select: {
+              posts: {
+                where: {
+                  status: PostStatus.PUBLISHED
+                }
+              }
             }
           }
+        },
+        orderBy: {
+          name: 'asc'
         }
-      }
-    },
-    orderBy: {
-      name: 'asc'
+      })
+    } catch (error) {
+      throw error
     }
-  })
+  })()
+    .then((res) => {
+      categoriesCache = res
+      categoriesCacheExpiresAt = Date.now() + CATEGORIES_CACHE_TTL_MS
+      return res
+    })
+    .finally(() => {
+      categoriesPromise = null
+    })
+
+  return categoriesPromise
 }
 
 // Get latest news/posts
@@ -196,63 +228,78 @@ export function calculateReadTime(content: string): number {
 
 // Get all published posts for news page with optional filtering
 export async function getNewsPosts(categorySlug?: string, searchQuery?: string) {
-  const posts = await prisma.post.findMany({
-    where: {
-      status: PostStatus.PUBLISHED,
-      ...(categorySlug && categorySlug !== 'all' ? {
-        category: {
-          slug: categorySlug,
-        },
-      } : {}),
-      ...(searchQuery ? {
-        OR: [
-          {
-            title: {
-              contains: searchQuery,
-              mode: 'insensitive',
+  const key = `${categorySlug ?? ''}|${searchQuery ?? ''}`
+  const existing = newsPostsInFlight.get(key)
+  if (existing) return existing
+
+  const promise = (async () => {
+    try {
+      const posts = await prisma.post.findMany({
+        where: {
+          status: PostStatus.PUBLISHED,
+          ...(categorySlug && categorySlug !== 'all' ? {
+            category: {
+              slug: categorySlug,
             },
-          },
-          {
-            excerpt: {
-              contains: searchQuery,
-              mode: 'insensitive',
-            },
-          },
-          {
-            content: {
-              contains: searchQuery,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      } : {}),
-    },
-    include: {
-      author: {
-        select: {
-          name: true,
-          avatar: true,
+          } : {}),
+          ...(searchQuery ? {
+            OR: [
+              {
+                title: {
+                  contains: searchQuery,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                excerpt: {
+                  contains: searchQuery,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                content: {
+                  contains: searchQuery,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          } : {}),
         },
-      },
-      category: {
-        select: {
-          name: true,
-          slug: true,
-          color: true,
-        },
-      },
-      tags: {
         include: {
-          tag: true,
+          author: {
+            select: {
+              name: true,
+              avatar: true,
+            },
+          },
+          category: {
+            select: {
+              name: true,
+              slug: true,
+              color: true,
+            },
+          },
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
         },
-      },
-    },
-    orderBy: {
-      publishedAt: 'desc',
-    },
+        orderBy: {
+          publishedAt: 'desc',
+        },
+      })
+      
+      return posts
+    } catch (error) {
+      throw error
+    }
+  })().finally(() => {
+    newsPostsInFlight.delete(key)
   })
 
-  return posts
+  newsPostsInFlight.set(key, promise)
+  return promise
 }
 
 // Get trending categories (categories with most posts)

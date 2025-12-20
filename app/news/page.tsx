@@ -1,7 +1,7 @@
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { NewsPageContent } from "@/components/news-page-content"
-import { getCategories, getTrendingCategories } from "@/lib/blog"
+import { getCategories } from "@/lib/blog"
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -38,11 +38,11 @@ export default async function NewsPage({
 }: {
   searchParams: { category?: string; search?: string }
 }) {
-  // Fetch all required data
-  const [categories, trendingCategories] = await Promise.all([
-    getCategories(),
-    getTrendingCategories(5)
-  ])
+  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  const categories = await getCategories()
+  const trendingCategories = [...categories]
+    .sort((a, b) => (b._count?.posts ?? 0) - (a._count?.posts ?? 0))
+    .slice(0, 5)
 
   return (
     <div className="min-h-screen bg-background">
