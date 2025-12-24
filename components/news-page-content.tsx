@@ -4,7 +4,9 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { NewsHeader, SortOption } from '@/components/news-header'
 import { NewsGrid } from '@/components/news-grid'
-import { NewsSidebar } from '@/components/news-sidebar'
+import { Button } from '@/components/ui/button'
+
+const PAGE_SIZE = 9 // Clearance: cap client fetches at 9 posts per page to mirror API
 
 type Category = {
   id: string
@@ -57,14 +59,12 @@ type NewsPost = {
 
 interface NewsPageContentProps {
   categories: Category[]
-  trendingCategories: TrendingCategory[]
   initialCategory: string
   initialSearch: string
 }
 
 export function NewsPageContent({
   categories,
-  trendingCategories,
   initialCategory,
   initialSearch
 }: NewsPageContentProps) {
@@ -73,15 +73,19 @@ export function NewsPageContent({
   const fetchControllerRef = useRef<AbortController | null>(null)
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
-  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [searchInput, setSearchInput] = useState(initialSearch)
+  const [submittedSearch, setSubmittedSearch] = useState(initialSearch.trim())
   const [posts, setPosts] = useState<NewsPost[]>([])
   const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalPosts, setTotalPosts] = useState(0)
 
   // Fetch posts when filters change
   useEffect(() => {
     fetchPosts()
-  }, [selectedCategory, searchQuery])
+  }, [selectedCategory, submittedSearch, sortBy, page])
 
   const fetchPosts = async () => {
     // Cancel any in-flight request so we don't spam the server/DB with parallel queries
@@ -96,9 +100,13 @@ export function NewsPageContent({
         params.set('category', selectedCategory)
       }
 
-      if (searchQuery.trim() !== '') {
-        params.set('search', searchQuery.trim())
+      if (submittedSearch !== '') {
+        params.set('search', submittedSearch)
       }
+
+      params.set('page', page.toString())
+      params.set('pageSize', PAGE_SIZE.toString())
+      params.set('sort', sortBy)
 
       const response = await fetch(`/api/news?${params.toString()}`, { signal: controller.signal })
 
@@ -106,14 +114,26 @@ export function NewsPageContent({
         throw new Error('Failed to fetch posts')
       }
 
-      const fetchedPosts = await response.json()
-      setPosts(fetchedPosts)
+      type NewsResponse = {
+        posts: NewsPost[]
+        page: number
+        pageSize: number
+        total: number
+        totalPages: number
+      }
+
+      const data: NewsResponse = await response.json()
+      setPosts(data.posts)
+      setTotalPages(data.totalPages)
+      setTotalPosts(data.total)
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return
       }
       console.error('Failed to fetch posts:', error)
       setPosts([])
+      setTotalPages(1)
+      setTotalPosts(0)
     } finally {
       if (fetchControllerRef.current === controller) {
         setLoading(false)
@@ -154,6 +174,7 @@ export function NewsPageContent({
 
   const handleCategoryChange = (categorySlug: string) => {
     setSelectedCategory(categorySlug)
+    setPage(1)
 
     // Update URL params
     const params = new URLSearchParams(searchParams.toString())
@@ -168,12 +189,32 @@ export function NewsPageContent({
   }
 
   const handleSearchChange = (query: string) => {
-    setSearchQuery(query)
-    // Clearance: avoid pushing to /news on every keystroke (prevents extra server renders + DB load)
+    setSearchInput(query)
+    // Clearance: keep input controlled but defer fetching until submit
+  }
+
+  const handleSearchSubmit = () => {
+    // Clearance: only refresh results when the user intentionally submits
+    const normalizedQuery = searchInput.trim()
+    setPage(1)
+    setSubmittedSearch(normalizedQuery)
   }
 
   const handleSortChange = (sort: SortOption) => {
     setSortBy(sort)
+    setPage(1)
+  }
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage((prev) => prev + 1)
+    }
   }
 
   return (
@@ -182,20 +223,15 @@ export function NewsPageContent({
         categories={categories}
         onCategoryChange={handleCategoryChange}
         onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
         onSortChange={handleSortChange}
         selectedCategory={selectedCategory}
-        searchQuery={searchQuery}
+        searchQuery={searchInput}
         sortBy={sortBy}
       />
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Show sidebar first on mobile, second on desktop */}
-          <div className="lg:col-span-1 lg:order-2">
-            <NewsSidebar
-              trendingCategories={trendingCategories}
-            />
-          </div>
-          {/* Show main content second on mobile, first on desktop */}
+        {/* Clearance: full-width content now that sidebar is removed */}
+        <div className="grid grid-cols-1">
           <div className="lg:col-span-3 lg:order-1">
             {loading ? (
               <div className="text-center py-16">
@@ -203,7 +239,36 @@ export function NewsPageContent({
                 <p className="mt-4 text-muted-foreground">Loading posts...</p>
               </div>
             ) : (
-              <NewsGrid posts={sortedPosts} />
+              <>
+                <NewsGrid posts={sortedPosts} />
+                <div className="mt-10 flex flex-col items-center space-y-3">
+                  {totalPosts > 0 && (
+                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                        onClick={handlePreviousPage}
+                        disabled={page === 1 || loading}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Page {page} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                        onClick={handleNextPage}
+                        disabled={page === totalPages || loading}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>

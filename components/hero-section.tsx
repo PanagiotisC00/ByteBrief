@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, Clock, User, Calendar } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 import { format } from "date-fns"
 
 // Type for latest articles
@@ -110,16 +110,16 @@ export function HeroSection({ featuredArticles }: HeroSectionProps) {
                 asChild
                 className="bg-primary hover:bg-primary/90 hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer transform"
               >
-                <Link href="/news">
+                <LoadingLink href="/news" loadingLabel="Loading news feed…">
                   Explore Latest News
-                </Link>
+                </LoadingLink>
               </Button>
             </div>
           </div>
 
           {/* Featured Article Carousel */}
           <div className="relative">
-            <Link href={`/blog/${currentArticle.slug}`} className="block">
+            <LoadingLink href={`/blog/${currentArticle.slug}`} className="block" loadingLabel="Loading article…">
               <Card className="overflow-hidden bg-card/50 backdrop-blur border-border/50 cursor-pointer hover:border-primary/50 transition-all duration-300">
                 <div className="relative">
                   <FallbackImage
@@ -167,7 +167,7 @@ export function HeroSection({ featuredArticles }: HeroSectionProps) {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </LoadingLink>
 
             {/* Carousel Controls */}
             <div className="flex items-center justify-between mt-4">

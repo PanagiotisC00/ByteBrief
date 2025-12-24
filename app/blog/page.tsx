@@ -5,9 +5,9 @@ import { FallbackImage } from "@/components/ui/fallback-image"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Calendar, Clock, User } from "lucide-react"
-import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import type { Metadata } from 'next'
+import { LoadingLink } from "@/components/ui/loading-link"
 
 export const metadata: Metadata = {
   title: 'Blog - Latest Tech Articles & Insights',
@@ -125,7 +125,7 @@ export default async function BlogPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {posts.map((post) => (
-                    <Link key={post.id} href={`/blog/${post.slug}`}>
+                    <LoadingLink key={post.id} href={`/blog/${post.slug}`} loadingLabel="Loading article…">
                       <Card className="group hover:shadow-lg transition-all duration-300 h-full">
                         <div className="relative overflow-hidden bg-muted/30">
                           <FallbackImage
@@ -177,7 +177,7 @@ export default async function BlogPage() {
 
                         </CardContent>
                       </Card>
-                    </Link>
+                    </LoadingLink>
                   ))}
                 </div>
               )}
@@ -193,16 +193,17 @@ export default async function BlogPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {categories.map((category) => (
-                      <Link
+                      <LoadingLink
                         key={category.id}
                         href={`/category/${category.slug}`}
+                        loadingLabel="Loading category…"
                         className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors"
                       >
                         <span className="text-sm text-foreground">{category.name}</span>
                         <Badge variant="secondary" className="text-xs">
                           {category._count.posts}
                         </Badge>
-                      </Link>
+                      </LoadingLink>
                     ))}
                   </CardContent>
                 </Card>

@@ -1,3 +1,5 @@
+import { cache } from "react"
+
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { prisma } from "@/lib/prisma"
@@ -5,13 +7,13 @@ import { FallbackImage } from "@/components/ui/fallback-image"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, User, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { format } from "date-fns"
 import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { BlogPostStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data"
 import { BlogContent } from "@/components/blog-content"
 import type { Metadata } from 'next'
+import { LoadingLink } from "@/components/ui/loading-link"
 
 interface BlogPostPageProps {
   params: {
@@ -20,7 +22,7 @@ interface BlogPostPageProps {
 }
 
 // Get blog post by slug
-async function getBlogPost(slug: string) {
+const getBlogPostCached = cache(async (slug: string) => {
   try {
     const post = await prisma.post.findUnique({
       where: {
@@ -61,7 +63,7 @@ async function getBlogPost(slug: string) {
     console.error('Error fetching blog post:', error)
     return null
   }
-}
+})
 
 // Get related posts
 async function getRelatedPosts(categoryId: string, currentPostId: string, limit = 3) {
@@ -72,7 +74,11 @@ async function getRelatedPosts(categoryId: string, currentPostId: string, limit 
         id: { not: currentPostId },
         status: 'PUBLISHED'
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        image: true,
         author: {
           select: {
             name: true
@@ -98,7 +104,7 @@ async function getRelatedPosts(categoryId: string, currentPostId: string, limit 
 
 // Generate dynamic metadata for each blog post
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getBlogPost(params.slug)
+  const post = await getBlogPostCached(params.slug)
 
   if (!post) {
     return {
@@ -172,7 +178,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = await getBlogPost(params.slug)
+  const post = await getBlogPostCached(params.slug)
 
   if (!post) {
     notFound()
@@ -186,12 +192,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <main className="pt-16">
         {/* Back Button */}
         <div className="container mx-auto px-4 py-6">
-          <Link href="/">
+          <LoadingLink href="/" loadingLabel="Loading home…">
             <Button variant="ghost" className="mb-6">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
-          </Link>
+          </LoadingLink>
         </div>
 
         {/* Article Header */}
@@ -325,7 +331,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((relatedPost: any) => (
-                    <Link key={relatedPost.id} href={`/blog/${relatedPost.slug}`}>
+                    <LoadingLink key={relatedPost.id} href={`/blog/${relatedPost.slug}`} loadingLabel="Loading article…">
                       <Card className="group hover:shadow-lg transition-all duration-300 h-full">
                         <div className="relative overflow-hidden bg-muted/30">
                           <FallbackImage
@@ -353,7 +359,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                           </div>
                         </CardContent>
                       </Card>
-                    </Link>
+                    </LoadingLink>
                   ))}
                 </div>
               </div>

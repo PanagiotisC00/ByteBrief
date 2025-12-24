@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { User, ArrowRight, Calendar, Clock } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 import { format } from "date-fns"
 
 // Type for latest news articles from database
@@ -59,19 +59,19 @@ export function LatestNews({ articles }: LatestNewsProps) {
           </div>
           <Button
             variant="outline"
-            asChild
             className="hidden md:flex items-center space-x-2 border-accent text-accent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 bg-transparent hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer transform"
+            asChild
           >
-            <Link href="/news">
+            <LoadingLink href="/news" loadingLabel="Loading news feed…">
               <span>View All News</span>
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </LoadingLink>
           </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article) => (
-            <Link key={article.id} href={`/blog/${article.slug}`} className="block">
+            <LoadingLink key={article.id} href={`/blog/${article.slug}`} className="block" loadingLabel="Loading article…">
               <Card
                 className="group hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/50 cursor-pointer h-full"
               >
@@ -118,19 +118,19 @@ export function LatestNews({ articles }: LatestNewsProps) {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </LoadingLink>
           ))}
         </div>
 
         <div className="text-center mt-8 md:hidden">
           <Button
             variant="outline"
-            asChild
             className="border-accent text-accent hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600 bg-transparent hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer transform"
+            asChild
           >
-            <Link href="/news">
+            <LoadingLink href="/news" loadingLabel="Loading news feed…">
               View All News
-            </Link>
+            </LoadingLink>
           </Button>
         </div>
       </div>

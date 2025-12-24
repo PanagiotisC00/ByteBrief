@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Cpu, Smartphone, Cloud, Shield, Zap, Globe, Brain, Database, Code2, Server, Link as LinkIcon } from "lucide-react"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 // Type for categories from database
 type Category = {
@@ -67,7 +67,7 @@ export function TechCategories({ categories }: TechCategoriesProps) {
           {categories.map((category) => {
             const IconComponent = iconMap[category.icon || 'Code2'] || Code2
             return (
-              <Link key={category.id} href={`/category/${category.slug}`}>
+              <LoadingLink key={category.id} href={`/category/${category.slug}`} loadingLabel="Loading category…">
                 <Card className="group hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/50 cursor-pointer h-full">
                   <CardContent className="p-6 text-center space-y-4">
                     <div className="flex justify-center">
@@ -89,7 +89,7 @@ export function TechCategories({ categories }: TechCategoriesProps) {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </LoadingLink>
             )
           })}
         </div>

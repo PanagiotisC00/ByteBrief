@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Calendar, Clock, User, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 
@@ -16,17 +16,29 @@ interface CategoryPageProps {
   }
 }
 
-// Get category by slug with posts
+// Clearance: select only listing fields to avoid shipping heavy content blobs
 async function getCategoryWithPosts(slug: string) {
   try {
-    const category = await prisma.category.findUnique({
+    return await prisma.category.findUnique({
       where: { slug },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        color: true,
         posts: {
           where: {
             status: 'PUBLISHED'
           },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            image: true,
+            readTime: true,
+            publishedAt: true,
             author: {
               select: {
                 name: true,
@@ -46,10 +58,24 @@ async function getCategoryWithPosts(slug: string) {
         }
       }
     })
-
-    return category
   } catch (error) {
     console.error('Error fetching category:', error)
+    return null
+  }
+}
+
+async function getCategoryMeta(slug: string) {
+  try {
+    return await prisma.category.findUnique({
+      where: { slug },
+      select: {
+        name: true,
+        description: true,
+        color: true,
+      },
+    })
+  } catch (error) {
+    console.error('Error fetching category metadata:', error)
     return null
   }
 }
@@ -67,12 +93,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <main className="pt-16">
         {/* Back Button */}
         <div className="container mx-auto px-4 py-6">
-          <Link href="/news">
+          <LoadingLink href="/news" loadingLabel="Loading news feed…">
             <Button variant="ghost" className="mb-6">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to All Articles
             </Button>
-          </Link>
+          </LoadingLink>
         </div>
 
         {/* Category Header */}
@@ -104,14 +130,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">No articles in this category yet.</p>
               <p className="text-muted-foreground mt-2">Check back soon for new content!</p>
-              <Link href="/news" className="mt-4 inline-block">
+              <LoadingLink href="/news" className="mt-4 inline-block" loadingLabel="Loading news feed…">
                 <Button>Browse All Articles</Button>
-              </Link>
+              </LoadingLink>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {category.posts.map((post) => (
-                <Link key={post.id} href={`/blog/${post.slug}`}>
+                <LoadingLink key={post.id} href={`/blog/${post.slug}`} loadingLabel="Loading article…">
                   <Card className="group hover:shadow-lg transition-all duration-300 h-full">
                     <div className="relative overflow-hidden bg-muted/30">
                       <FallbackImage
@@ -162,7 +188,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                       </div>
                     </CardContent>
                   </Card>
-                </Link>
+                </LoadingLink>
               ))}
             </div>
           )}
@@ -175,7 +201,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CategoryPageProps) {
-  const category = await getCategoryWithPosts(params.slug)
+  const category = await getCategoryMeta(params.slug)
 
   if (!category) {
     return {

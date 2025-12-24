@@ -38,11 +38,8 @@ export default async function NewsPage({
 }: {
   searchParams: { category?: string; search?: string }
 }) {
-  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
+  // Clearance: keep category fetch simple; no sidebar trends needed anymore
   const categories = await getCategories()
-  const trendingCategories = [...categories]
-    .sort((a, b) => (b._count?.posts ?? 0) - (a._count?.posts ?? 0))
-    .slice(0, 5)
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +47,6 @@ export default async function NewsPage({
       <main className="pt-16">
         <NewsPageContent
           categories={categories}
-          trendingCategories={trendingCategories}
           initialCategory={searchParams.category || 'all'}
           initialSearch={searchParams.search || ''}
         />

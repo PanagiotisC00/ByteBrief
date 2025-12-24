@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Code2, Mail } from "lucide-react"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 // X.com icon (Twitter equivalent) - same as contact page
 const XIcon = ({ className }: { className?: string }) => (
@@ -47,12 +48,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2">
+            <LoadingLink href="/" className="flex items-center space-x-2" loadingLabel="Loading home…">
               <Code2 className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 ByteBrief
               </span>
-            </Link>
+            </LoadingLink>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Your trusted source for the latest tech news, insights, and innovations. Stay ahead of the curve with
               ByteBrief.
@@ -78,12 +79,23 @@ export function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.href}>
-                    <Link
+                    <LoadingLink
                       href={link.href}
+                      loadingLabel={
+                        link.href === '/'
+                          ? 'Loading home…'
+                          : link.href.startsWith('/news')
+                            ? 'Loading news feed…'
+                            : link.href.startsWith('/blog')
+                              ? 'Loading article…'
+                              : link.href.startsWith('/category')
+                                ? 'Loading category…'
+                                : 'Loading content…'
+                      }
                       className="text-muted-foreground hover:text-accent transition-colors text-sm"
                     >
                       {link.label}
-                    </Link>
+                    </LoadingLink>
                   </li>
                 ))}
               </ul>

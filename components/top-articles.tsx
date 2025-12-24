@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Clock, User, TrendingUp } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 // Type for top articles from database
 type TopArticle = {
@@ -80,7 +80,9 @@ export function TopArticles({ articles }: TopArticlesProps) {
               </div>
               <CardHeader className="pb-2">
                 <h3 className="text-xl font-bold text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
-                  <Link href={`/blog/${article.slug}`}>{article.title}</Link>
+                  <LoadingLink href={`/blog/${article.slug}`} loadingLabel="Loading article…">
+                    {article.title}
+                  </LoadingLink>
                 </h3>
               </CardHeader>
               <CardContent className="space-y-4">

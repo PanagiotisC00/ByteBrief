@@ -6,10 +6,12 @@ import { TechCategories } from "@/components/tech-categories"
 import { getLatestPosts, getLatestNews, getCategories } from "@/lib/blog"
 
 export default async function HomePage() {
-  // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
-  const latestPosts = await getLatestPosts(3)
-  const latestNews = await getLatestNews(6)
-  const categories = await getCategories()
+  // Clearance: fetch homepage data in parallel so the landing view renders faster
+  const [latestPosts, latestNews, categories] = await Promise.all([
+    getLatestPosts(3),
+    getLatestNews(6),
+    getCategories(),
+  ])
 
   return (
     <div className="min-h-screen bg-background">

@@ -226,77 +226,187 @@ export function calculateReadTime(content: string): number {
   return Math.ceil(wordCount / wordsPerMinute)
 }
 
-// Get all published posts for news page with optional filtering
-export async function getNewsPosts(categorySlug?: string, searchQuery?: string) {
-  const key = `${categorySlug ?? ''}|${searchQuery ?? ''}`
+const NEWS_PAGE_SIZE_MAX = 9
+
+type GetNewsPostsSort = 'date-desc' | 'date-asc' | 'topic'
+
+type GetNewsPostsOptions = {
+  categorySlug?: string
+  searchQuery?: string
+  page?: number
+  pageSize?: number
+  sortBy?: GetNewsPostsSort
+}
+
+type NewsPostListItem = {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  image: string | null
+  imageAlt: string | null
+  readTime: number | null
+  publishedAt: Date | null
+  updatedAt: Date | null
+  author: {
+    name: string | null
+    avatar: string | null
+  }
+  category: {
+    name: string
+    slug: string
+    color: string | null
+  }
+  tags: {
+    tag: {
+      id: string
+      name: string
+      slug: string
+    }
+  }[]
+}
+
+type GetNewsPostsResult = {
+  posts: NewsPostListItem[]
+  total: number
+}
+
+// Clearance: enforce pagination + skinny selects so /news stays quick
+export async function getNewsPosts({
+  categorySlug,
+  searchQuery,
+  page = 1,
+  pageSize = NEWS_PAGE_SIZE_MAX,
+  sortBy = 'date-desc',
+}: GetNewsPostsOptions = {}): Promise<GetNewsPostsResult> {
+  const normalizedSearch = searchQuery?.trim() ?? ''
+  // Clearance: split search into tokens so any word can match
+  const searchTokens = normalizedSearch.length > 0 ? normalizedSearch.split(/\s+/) : []
+  const normalizedPage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1
+  const normalizedPageSize = Number.isFinite(pageSize)
+    ? Math.max(1, Math.min(Math.floor(pageSize), NEWS_PAGE_SIZE_MAX))
+    : NEWS_PAGE_SIZE_MAX
+  const sortOption: GetNewsPostsSort = sortBy ?? 'date-desc'
+
+  const key = [
+    categorySlug ?? '',
+    normalizedSearch,
+    normalizedPage,
+    normalizedPageSize,
+    sortOption,
+  ].join('|')
   const existing = newsPostsInFlight.get(key)
   if (existing) return existing
 
   const promise = (async () => {
     try {
-      const posts = await prisma.post.findMany({
-        where: {
-          status: PostStatus.PUBLISHED,
-          ...(categorySlug && categorySlug !== 'all' ? {
+      const where = {
+        status: PostStatus.PUBLISHED,
+        ...(categorySlug && categorySlug !== 'all'
+          ? {
+              category: {
+                slug: categorySlug,
+              },
+            }
+          : {}),
+        ...(searchTokens.length
+          ? {
+              OR: searchTokens.map((token) => ({
+                OR: [
+                  {
+                    title: {
+                      contains: token,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    excerpt: {
+                      contains: token,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    content: {
+                      contains: token,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              })),
+            }
+          : {}),
+      }
+
+      const orderBy =
+        sortOption === 'topic'
+          ? [
+              {
+                category: {
+                  name: 'asc' as const,
+                },
+              },
+              {
+                publishedAt: 'desc' as const,
+              },
+            ]
+          : [
+              {
+                publishedAt: (sortOption === 'date-asc' ? 'asc' : 'desc') as const,
+              },
+            ]
+
+      const [posts, total] = await Promise.all([
+        prisma.post.findMany({
+          where,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            image: true,
+            imageAlt: true,
+            readTime: true,
+            publishedAt: true,
+            updatedAt: true,
+            author: {
+              select: {
+                name: true,
+                avatar: true,
+              },
+            },
             category: {
-              slug: categorySlug,
+              select: {
+                name: true,
+                slug: true,
+                color: true,
+              },
             },
-          } : {}),
-          ...(searchQuery ? {
-            OR: [
-              {
-                title: {
-                  contains: searchQuery,
-                  mode: 'insensitive',
+            tags: {
+              include: {
+                tag: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                  },
                 },
               },
-              {
-                excerpt: {
-                  contains: searchQuery,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                content: {
-                  contains: searchQuery,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          } : {}),
-        },
-        include: {
-          author: {
-            select: {
-              name: true,
-              avatar: true,
             },
           },
-          category: {
-            select: {
-              name: true,
-              slug: true,
-              color: true,
-            },
-          },
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-        },
-        orderBy: {
-          publishedAt: 'desc',
-        },
-      })
-      
-      return posts
-    } catch (error) {
-      throw error
+          orderBy,
+          skip: (normalizedPage - 1) * normalizedPageSize,
+          take: normalizedPageSize,
+        }),
+        prisma.post.count({
+          where,
+        }),
+      ])
+
+      return { posts, total }
+    } finally {
+      newsPostsInFlight.delete(key)
     }
-  })().finally(() => {
-    newsPostsInFlight.delete(key)
-  })
+  })()
 
   newsPostsInFlight.set(key, promise)
   return promise

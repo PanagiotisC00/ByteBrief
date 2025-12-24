@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Clock, User, Calendar } from "lucide-react"
 import { FallbackImage } from "@/components/ui/fallback-image"
 import { format } from "date-fns"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 type NewsPost = {
   id: string
@@ -64,7 +64,7 @@ export function NewsGrid({ posts }: NewsGridProps) {
         <h2 className="text-2xl font-bold text-foreground">Latest News</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {posts.map((article) => (
-            <Link key={article.id} href={`/blog/${article.slug}`} className="block">
+            <LoadingLink key={article.id} href={`/blog/${article.slug}`} className="block" loadingLabel="Loading article…">
               <Card
                 className="group hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/50 cursor-pointer h-full"
               >
@@ -111,7 +111,7 @@ export function NewsGrid({ posts }: NewsGridProps) {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </LoadingLink>
           ))}
         </div>
       </div>

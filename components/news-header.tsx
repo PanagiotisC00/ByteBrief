@@ -1,5 +1,7 @@
 "use client"
 
+import type { KeyboardEvent } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ArrowUpDown, ArrowDown, ArrowUp, Layers } from "lucide-react"
@@ -23,6 +25,7 @@ interface NewsHeaderProps {
   categories: Category[]
   onCategoryChange: (categorySlug: string) => void
   onSearchChange: (searchQuery: string) => void
+  onSearchSubmit: () => void
   onSortChange: (sort: SortOption) => void
   selectedCategory: string
   searchQuery: string
@@ -39,12 +42,19 @@ export function NewsHeader({
   categories,
   onCategoryChange,
   onSearchChange,
+  onSearchSubmit,
   onSortChange,
   selectedCategory,
   searchQuery,
   sortBy
 }: NewsHeaderProps) {
-
+  // Clearance: trigger searches only when user explicitly submits
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      onSearchSubmit()
+    }
+  }
   return (
     <section className="bg-gradient-to-br from-background via-background to-card py-16">
       <div className="container mx-auto px-4">
@@ -60,14 +70,27 @@ export function NewsHeader({
         {/* Search and Filters */}
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-            <Input
-              placeholder="Search tech news, articles, and insights..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 pr-4 py-3 text-lg bg-card border-border"
-            />
+          <div className="flex w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 pointer-events-none" />
+              <Input
+                placeholder="Search tech news, articles, and insights..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="h-12 w-full rounded-l-md rounded-r-none border border-border border-r-0 bg-card pl-10 pr-4 text-base"
+              />
+            </div>
+            {/* Clearance: keep button flush with the input so the control feels seamless */}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onSearchSubmit}
+              className="-ml-px h-12 rounded-l-none rounded-r-md border border-border bg-accent px-4 text-accent-foreground hover:bg-accent/90"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Category Filters */}

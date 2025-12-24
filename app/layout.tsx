@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
 import { BlogWebsiteStructuredData } from "@/components/seo/structured-data"
+import { NavigationFeedbackProvider } from "@/components/providers/navigation-feedback-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -119,10 +120,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <Suspense fallback={null}>{children}</Suspense>
-        <Toaster theme="dark" />
-        <Analytics />
-        <BlogWebsiteStructuredData />
+        <NavigationFeedbackProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <Toaster theme="dark" />
+          <Analytics />
+          <BlogWebsiteStructuredData />
+        </NavigationFeedbackProvider>
       </body>
     </html>
   )

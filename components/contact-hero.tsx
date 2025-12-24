@@ -1,5 +1,5 @@
 import { Mail, Clock, MessageCircle } from "lucide-react"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 // X.com icon (Twitter equivalent)
 const XIcon = ({ className }: { className?: string }) => (
@@ -65,8 +65,9 @@ export function ContactHero() {
             </a>
 
             {/* Instagram - Clickable link to coming soon */}
-            <Link
+            <LoadingLink
               href="/coming-soon"
+              loadingLabel="Loading content…"
               className="text-center space-y-4 p-6 rounded-lg hover:bg-gradient-to-br hover:from-primary/10 hover:to-primary/5 hover:shadow-lg hover:scale-105 transition-all duration-500 group cursor-pointer border border-transparent hover:border-primary/30"
             >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border border-primary/20 group-hover:bg-primary/30 group-hover:border-primary/40 group-hover:shadow-lg transition-all duration-500">
@@ -80,7 +81,7 @@ export function ContactHero() {
                 </div>
               </div>
               <p className="text-white/80 transition-all duration-500">Behind the scenes and visual content</p>
-            </Link>
+            </LoadingLink>
           </div>
         </div>
       </div>

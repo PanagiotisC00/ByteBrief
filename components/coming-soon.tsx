@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Clock, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 interface ComingSoonProps {
   title?: string
@@ -52,12 +52,12 @@ export function ComingSoon({
 
           {/* Back Button */}
           <div className="flex justify-center">
-            <Link href="/">
+            <LoadingLink href="/" loadingLabel="Loading home…">
               <Button variant="outline" size="lg">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
               </Button>
-            </Link>
+            </LoadingLink>
           </div>
         </div>
       </div>

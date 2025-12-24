@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Mail, Clock } from "lucide-react"
 import Link from "next/link"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 // X.com icon (Twitter equivalent)
 const XIcon = ({ className }: { className?: string }) => (
@@ -81,32 +82,41 @@ export function ContactInfo() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4 pt-2">
-          {socialLinks.map((social) => (
-            <Link
-              key={social.label}
-              href={social.href}
-              className="flex items-center p-4 rounded-lg bg-gradient-to-br from-accent/5 via-accent/3 to-primary/5 border border-accent/10 hover:border-accent/30 hover:shadow-md transition-all duration-300 group overflow-hidden"
-            >
-              <div className="flex items-center space-x-4 min-w-0 flex-1">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/20 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300 flex-shrink-0">
-                  <social.icon className="h-6 w-6 text-white transition-colors duration-300" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-white text-lg transition-colors duration-300">
-                      {social.label}
-                    </p>
-                    {social.isComingSoon && (
-                      <Badge variant="secondary" className="bg-accent/15 text-accent text-xs font-semibold border border-accent/20 ml-2">
-                        Coming Soon
-                      </Badge>
-                    )}
+          {socialLinks.map((social) => {
+            const isInternal = social.href.startsWith("/")
+            const LinkComponent = isInternal ? LoadingLink : Link
+            const commonProps = {
+              key: social.label,
+              href: social.href,
+              className:
+                "flex items-center p-4 rounded-lg bg-gradient-to-br from-accent/5 via-accent/3 to-primary/5 border border-accent/10 hover:border-accent/30 hover:shadow-md transition-all duration-300 group overflow-hidden",
+            }
+            return (
+              <LinkComponent
+                {...commonProps}
+                {...(isInternal ? { loadingLabel: "Loading content…" } : {})}
+              >
+                <div className="flex items-center space-x-4 min-w-0 flex-1">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/20 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300 flex-shrink-0">
+                    <social.icon className="h-6 w-6 text-white transition-colors duration-300" />
                   </div>
-                  <p className="text-sm text-white/80 font-medium mt-1 break-words">{social.handle}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-white text-lg transition-colors duration-300">
+                        {social.label}
+                      </p>
+                      {social.isComingSoon && (
+                        <Badge variant="secondary" className="bg-accent/15 text-accent text-xs font-semibold border border-accent/20 ml-2">
+                          Coming Soon
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-white/80 font-medium mt-1 break-words">{social.handle}</p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </LinkComponent>
+            )
+          })}
         </CardContent>
       </Card>
 
@@ -130,14 +140,14 @@ export function ContactInfo() {
                 Include a clear subject line to help us categorize and respond to your email faster.
               </p>
             </div>
-            <div className="flex items-start space-x-4 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10">
-              <Badge variant="secondary" className="bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 text-xs font-bold px-3 py-1 mt-1 shadow-sm">
-                Story Tips
-              </Badge>
-              <p className="text-sm text-foreground font-medium leading-relaxed">
-                For news tips, include relevant links and sources to help us verify information.
-              </p>
-            </div>
+          <div className="flex items-start space-x-4 p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10">
+            <Badge variant="secondary" className="bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 text-xs font-bold px-3 py-1 mt-1 shadow-sm">
+              Story Tips
+            </Badge>
+            <p className="text-sm text-foreground font-medium leading-relaxed">
+              For news tips, include relevant links and sources to help us verify information.
+            </p>
+          </div>
             <div className="flex items-start space-x-4 p-4 rounded-lg bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/10">
               <Badge variant="secondary" className="bg-accent/20 text-accent border border-accent/30 text-xs font-bold px-3 py-1 mt-1 shadow-sm">
                 Fast Reply
