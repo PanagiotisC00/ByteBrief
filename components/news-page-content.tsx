@@ -82,6 +82,18 @@ export function NewsPageContent({
   const [totalPages, setTotalPages] = useState(1)
   const [totalPosts, setTotalPosts] = useState(0)
 
+  // Keep state in sync with URL params so clicking Tech News resets filters
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    const category = params.get('category') || 'all'
+    const search = params.get('search') || ''
+
+    setSelectedCategory(category)
+    setSearchInput(search)
+    setSubmittedSearch(search.trim())
+    setPage(1)
+  }, [searchParams])
+
   // Fetch posts when filters change
   useEffect(() => {
     fetchPosts()
@@ -196,8 +208,16 @@ export function NewsPageContent({
   const handleSearchSubmit = () => {
     // Clearance: only refresh results when the user intentionally submits
     const normalizedQuery = searchInput.trim()
-    setPage(1)
-    setSubmittedSearch(normalizedQuery)
+
+    // Update URL with search param (or remove it)
+    const params = new URLSearchParams(searchParams.toString())
+    if (normalizedQuery === '') {
+      params.delete('search')
+    } else {
+      params.set('search', normalizedQuery)
+    }
+    const url = params.toString() ? `/news?${params.toString()}` : '/news'
+    router.push(url, { scroll: false })
   }
 
   const handleSortChange = (sort: SortOption) => {
