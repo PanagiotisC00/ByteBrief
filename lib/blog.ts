@@ -1,6 +1,7 @@
 // Blog data fetching utilities
 import { prisma } from './prisma'
 import { PostStatus } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 // Dedupe/caching to reduce concurrent Prisma load (important for pooler/serverless stability)
 const CATEGORIES_CACHE_TTL_MS = 30_000
@@ -300,7 +301,8 @@ export async function getNewsPosts({
 
   const promise = (async () => {
     try {
-      const where = {
+      // Clearance: strongly type Prisma filters to avoid TS widening (mode becomes string otherwise)
+      const where: Prisma.PostWhereInput = {
         status: PostStatus.PUBLISHED,
         ...(categorySlug && categorySlug !== 'all'
           ? {
@@ -311,31 +313,35 @@ export async function getNewsPosts({
           : {}),
         ...(searchTokens.length
           ? {
-              OR: searchTokens.map((token) => ({
-                OR: [
-                  {
-                    title: {
-                      contains: token,
-                      mode: 'insensitive',
+              OR: searchTokens.map(
+                (token): Prisma.PostWhereInput => ({
+                  OR: [
+                    {
+                      title: {
+                        contains: token,
+                        mode: 'insensitive',
+                      },
                     },
-                  },
-                  {
-                    excerpt: {
-                      contains: token,
-                      mode: 'insensitive',
+                    {
+                      excerpt: {
+                        contains: token,
+                        mode: 'insensitive',
+                      },
                     },
-                  },
-                  {
-                    content: {
-                      contains: token,
-                      mode: 'insensitive',
+                    {
+                      content: {
+                        contains: token,
+                        mode: 'insensitive',
+                      },
                     },
-                  },
-                ],
-              })),
+                  ],
+                })
+              ),
             }
           : {}),
       }
+
+      const publishedOrder: 'asc' | 'desc' = sortOption === 'date-asc' ? 'asc' : 'desc'
 
       const orderBy =
         sortOption === 'topic'
@@ -351,7 +357,7 @@ export async function getNewsPosts({
             ]
           : [
               {
-                publishedAt: (sortOption === 'date-asc' ? 'asc' : 'desc') as const,
+                publishedAt: publishedOrder,
               },
             ]
 
