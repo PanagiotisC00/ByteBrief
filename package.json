@@ -16,6 +16,7 @@
     "_db:studio": "prisma studio",
     "_db:reset": "prisma migrate reset"
   },
+  "comment_dompurify_types": "Clearance: dompurify ships its own TypeScript types; @types/dompurify is redundant and deprecated",
   "_security_comment": "Clearance: pin a patched glob for Next ESLint plugin to address dev-only audit advisory without upgrading Next major versions",
   "overrides": {
     "@next/eslint-plugin-next": {
@@ -56,7 +57,6 @@
     "@tiptap/extension-placeholder": "^3.13.0",
     "@tiptap/react": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
-    "@types/dompurify": "^3.0.5",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
