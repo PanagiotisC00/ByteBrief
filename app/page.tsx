@@ -18,8 +18,9 @@ export default async function HomePage() {
       <Navigation />
       <main className="pt-16">
         <HeroSection featuredArticles={latestPosts} />
-        <TechCategories categories={categories} />
+        {/* Clearance: show Latest News before Explore Categories for better homepage flow */}
         <LatestNews articles={latestNews} />
+        <TechCategories categories={categories} />
       </main>
       <Footer />
     </div>
