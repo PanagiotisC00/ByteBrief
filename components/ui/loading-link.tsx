@@ -5,7 +5,7 @@ import Link from 'next/link'
 import type { LinkProps } from 'next/link'
 import type { AnchorHTMLAttributes, MouseEvent, ReactNode } from 'react'
 import { forwardRef, useMemo } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useNavigationFeedback } from '@/components/providers/navigation-feedback-provider'
 
 type LoadingLinkProps = LinkProps &
@@ -20,23 +20,49 @@ export const LoadingLink = forwardRef<HTMLAnchorElement, LoadingLinkProps>(funct
 ) {
   const { startNavigation } = useNavigationFeedback()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const searchParamsString = searchParams?.toString() ?? ''
 
   const isSameRoute = useMemo(() => {
-    const normalize = (value?: string | null) => {
-      if (!value) return null
-      const cleaned = value.split('#')[0]?.split('?')[0] || '/'
-      if (cleaned === '/') return '/'
-      return cleaned.replace(/\/+$/, '') || '/'
+    const normalize = (path: string, search: string) => {
+      const cleanedPath = path === '/' ? '/' : path.replace(/\/+$/, '') || '/'
+      return `${cleanedPath}${search}`
     }
 
-    const target =
-      typeof props.href === 'string'
-        ? normalize(props.href)
-        : normalize(props.href?.pathname?.toString() ?? null)
-    const current = normalize(pathname)
+    const current = normalize(pathname || '/', searchParamsString ? `?${searchParamsString}` : '')
 
-    return Boolean(target && current && target === current)
-  }, [pathname, props.href])
+    let targetPath = ''
+    let targetSearch = ''
+
+    if (typeof props.href === 'string') {
+      try {
+        const url = new URL(props.href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+        targetPath = url.pathname
+        targetSearch = url.search
+      } catch {
+        targetPath = props.href
+        targetSearch = ''
+      }
+    } else if (typeof props.href === 'object' && props.href !== null) {
+      const path = typeof props.href.pathname === 'string' ? props.href.pathname : pathname || '/'
+      let search = ''
+      if (typeof props.href.search === 'string') {
+        search = props.href.search
+      } else if (props.href.query) {
+        const searchParams = new URLSearchParams()
+        Object.entries(props.href.query).forEach(([key, value]) => {
+          if (value == null) return
+          searchParams.set(key, String(value))
+        })
+        const built = searchParams.toString()
+        search = built ? `?${built}` : ''
+      }
+      targetPath = path
+      targetSearch = search
+    }
+
+    return targetPath ? normalize(targetPath, targetSearch) === current : false
+  }, [pathname, props.href, searchParamsString])
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (

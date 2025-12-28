@@ -26,13 +26,13 @@ export function ContactHero() {
               <span className="text-accent font-medium">Get in Touch</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-balance leading-tight">
-              Let's Start a{" "}
+              Let&apos;s Start a{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Conversation
               </span>
             </h1>
             <p className="text-xl text-muted-foreground text-pretty leading-relaxed max-w-3xl mx-auto">
-              Have a story tip, feedback, or want to collaborate? We'd love to hear from you. Our team is always ready
+              Have a story tip, feedback, or want to collaborate? We&apos;d love to hear from you. Our team is always ready
               to connect with the tech community.
             </p>
           </div>

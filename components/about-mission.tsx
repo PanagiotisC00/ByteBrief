@@ -39,7 +39,7 @@ export function AboutMission() {
                   <div>
                     <h3 className="text-xl font-semibold text-foreground mb-2">Our Vision</h3>
                     <p className="text-muted-foreground leading-relaxed">
-                      To become the world's most trusted source for technology news and insights, fostering a global
+                      To become the world&apos;s most trusted source for technology news and insights, fostering a global
                       community of informed tech enthusiasts who can navigate and shape the digital future together.
                     </p>
                   </div>

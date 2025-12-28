@@ -16,6 +16,12 @@
     "_db:studio": "prisma studio",
     "_db:reset": "prisma migrate reset"
   },
+  "_security_comment": "Clearance: pin a patched glob for Next ESLint plugin to address dev-only audit advisory without upgrading Next major versions",
+  "overrides": {
+    "@next/eslint-plugin-next": {
+      "glob": "10.5.0"
+    }
+  },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
     "@hookform/resolvers": "^3.10.0",
@@ -50,6 +56,7 @@
     "@tiptap/extension-placeholder": "^3.13.0",
     "@tiptap/react": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
+    "@types/dompurify": "^3.0.5",
     "@types/uuid": "^10.0.0",
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
@@ -57,13 +64,14 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "^4.1.0",
+    "dompurify": "^3.3.1",
     "embla-carousel-react": "8.5.1",
     "geist": "latest",
     "input-otp": "1.4.1",
     "katex": "^0.16.25",
     "lucide-react": "^0.454.0",
-    "next": "^14.2.32",
-    "next-auth": "^4.24.11",
+    "next": "^14.2.35",
+    "next-auth": "^4.24.13",
     "next-themes": "^0.4.6",
     "react": "^18",
     "react-day-picker": "9.8.0",
@@ -91,6 +99,8 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.35",
     "postcss": "^8.5",
     "prisma": "^6.16.2",
     "tailwindcss": "^4.1.9",

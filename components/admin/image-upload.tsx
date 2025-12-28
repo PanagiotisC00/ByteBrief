@@ -209,7 +209,7 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
             placeholder="Describe the image for accessibility..."
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Help screen readers understand what's in the image
+            Help screen readers understand what&apos;s in the image
           </p>
         </div>
       </div>

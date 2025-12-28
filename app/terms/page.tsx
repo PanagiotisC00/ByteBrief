@@ -51,7 +51,7 @@ export default function TermsPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-foreground mb-4">Disclaimer</h2>
                 <p className="text-foreground leading-relaxed mb-4">
-                  ByteBrief provides content "as is" for informational purposes. We make no warranties about the 
+                  ByteBrief provides content &quot;as is&quot; for informational purposes. We make no warranties about the 
                   accuracy, completeness, or reliability of any content. We are not responsible for the content 
                   of external sites linked from our articles.
                 </p>

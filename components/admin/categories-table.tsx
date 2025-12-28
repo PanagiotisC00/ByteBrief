@@ -185,7 +185,7 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Category</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the category "{deleteCategory?.name}"? 
+              Are you sure you want to delete the category &quot;{deleteCategory?.name}&quot;? 
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

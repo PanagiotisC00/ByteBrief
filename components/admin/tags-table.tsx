@@ -170,7 +170,7 @@ export function TagsTable({ tags }: TagsTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tag</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the tag "{deleteTag?.name}"? 
+              Are you sure you want to delete the tag &quot;{deleteTag?.name}&quot;? 
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

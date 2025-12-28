@@ -45,7 +45,7 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Edit Category</h1>
           <p className="text-muted-foreground mt-2">
-            Update "{category.name}" category details
+            Update &quot;{category.name}&quot; category details
           </p>
         </div>
         

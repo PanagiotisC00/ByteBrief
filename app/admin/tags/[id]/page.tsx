@@ -47,7 +47,7 @@ export default async function EditTagPage({ params }: EditTagPageProps) {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Edit Tag</h1>
           <p className="text-muted-foreground mt-2">
-            Update "{tag.name}" tag details
+            Update &quot;{tag.name}&quot; tag details
           </p>
         </div>
         

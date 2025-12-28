@@ -44,7 +44,7 @@ export function ComingSoon({
                   <span className="text-accent font-medium text-sm">In Development</span>
                 </div>
                 <p className="text-muted-foreground">
-                  {feature} is currently under development. We're putting the finishing touches on it to ensure the best possible experience.
+                  {feature} is currently under development. We&apos;re putting the finishing touches on it to ensure the best possible experience.
                 </p>
               </div>
             </CardContent>

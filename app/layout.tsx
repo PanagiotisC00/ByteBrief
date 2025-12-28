@@ -120,12 +120,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <NavigationFeedbackProvider>
-          <Suspense fallback={null}>{children}</Suspense>
-          <Toaster theme="dark" />
-          <Analytics />
-          <BlogWebsiteStructuredData />
-        </NavigationFeedbackProvider>
+        <Suspense fallback={null}>
+          <NavigationFeedbackProvider>{children}</NavigationFeedbackProvider>
+        </Suspense>
+        <Toaster theme="dark" />
+        <Analytics />
+        <BlogWebsiteStructuredData />
       </body>
     </html>
   )

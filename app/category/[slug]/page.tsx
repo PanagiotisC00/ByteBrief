@@ -10,82 +10,110 @@ import { LoadingLink } from "@/components/ui/loading-link"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 
+const CATEGORY_PAGE_SIZE = 9
+
 interface CategoryPageProps {
   params: {
     slug: string
   }
+  searchParams: {
+    page?: string
+  }
 }
 
-// Clearance: select only listing fields to avoid shipping heavy content blobs
-async function getCategoryWithPosts(slug: string) {
+// Clearance: fetch paged posts so categories with many articles stay fast
+async function getCategoryPageData(slug: string, page: number) {
   try {
-    return await prisma.category.findUnique({
-      where: { slug },
+    const [categoryMeta, total] = await Promise.all([
+      prisma.category.findUnique({
+        where: { slug },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          color: true,
+        },
+      }),
+      prisma.post.count({
+        where: {
+          status: 'PUBLISHED',
+          category: {
+            slug,
+          },
+        },
+      }),
+    ])
+
+    if (!categoryMeta) {
+      return null
+    }
+
+    const posts = await prisma.post.findMany({
+      where: {
+        status: 'PUBLISHED',
+        category: {
+          slug,
+        },
+      },
       select: {
         id: true,
-        name: true,
+        title: true,
         slug: true,
-        description: true,
-        color: true,
-        posts: {
-          where: {
-            status: 'PUBLISHED'
-          },
+        excerpt: true,
+        image: true,
+        readTime: true,
+        publishedAt: true,
+        author: {
           select: {
-            id: true,
-            title: true,
-            slug: true,
-            excerpt: true,
-            image: true,
-            readTime: true,
-            publishedAt: true,
-            author: {
-              select: {
-                name: true,
-                avatar: true
-              }
-            },
-            category: {
-              select: {
-                name: true,
-                color: true
-              }
-            }
+            name: true,
+            avatar: true,
           },
-          orderBy: {
-            publishedAt: 'desc'
-          }
-        }
-      }
-    })
-  } catch (error) {
-    console.error('Error fetching category:', error)
-    return null
-  }
-}
-
-async function getCategoryMeta(slug: string) {
-  try {
-    return await prisma.category.findUnique({
-      where: { slug },
-      select: {
-        name: true,
-        description: true,
-        color: true,
+        },
+        category: {
+          select: {
+            name: true,
+            color: true,
+          },
+        },
       },
+      orderBy: {
+        publishedAt: 'desc',
+      },
+      skip: (page - 1) * CATEGORY_PAGE_SIZE,
+      take: CATEGORY_PAGE_SIZE,
     })
+
+    return {
+      category: categoryMeta,
+      total,
+      posts,
+    }
   } catch (error) {
-    console.error('Error fetching category metadata:', error)
+    console.error('Error fetching category page data:', error)
     return null
   }
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const category = await getCategoryWithPosts(params.slug)
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
+  const pageParam = Number(searchParams.page ?? '1')
+  const currentPage = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1
 
-  if (!category) {
+  const data = await getCategoryPageData(params.slug, currentPage)
+
+  if (!data) {
     notFound()
   }
+
+  const totalPages = Math.max(1, Math.ceil(data.total / CATEGORY_PAGE_SIZE))
+  const hasPrevious = currentPage > 1
+  const hasNext = currentPage < totalPages
+
+  const category = data.category
+  const posts = data.posts
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,14 +147,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </p>
             )}
             <p className="text-muted-foreground">
-              {category.posts.length} {category.posts.length === 1 ? 'article' : 'articles'} in this category
+              {data.total} {data.total === 1 ? 'article' : 'articles'} in this category
             </p>
           </div>
         </div>
 
         {/* Posts Grid */}
         <div className="container mx-auto px-4 pb-16">
-          {category.posts.length === 0 ? (
+          {posts.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">No articles in this category yet.</p>
               <p className="text-muted-foreground mt-2">Check back soon for new content!</p>
@@ -135,8 +163,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </LoadingLink>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {category.posts.map((post) => (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.map((post) => (
                 <LoadingLink key={post.id} href={`/blog/${post.slug}`} loadingLabel="Loading article…">
                   <Card className="group hover:shadow-lg transition-all duration-300 h-full">
                     <div className="relative overflow-hidden bg-muted/30">
@@ -189,8 +218,50 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     </CardContent>
                   </Card>
                 </LoadingLink>
-              ))}
-            </div>
+                ))}
+              </div>
+              <div className="mt-10 flex flex-col items-center space-y-3">
+                {/* Clearance: category pages now paginate to 9 posts per page */}
+                <p className="text-sm text-muted-foreground text-center">
+                  Showing page {currentPage} of {totalPages}.
+                </p>
+                {data.total > CATEGORY_PAGE_SIZE && (
+                  <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                      disabled={!hasPrevious}
+                    >
+                      <LoadingLink
+                        href={`/category/${params.slug}${hasPrevious ? `?page=${currentPage - 1}` : ''}`}
+                        loadingLabel="Loading category…"
+                      >
+                        Previous
+                      </LoadingLink>
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                      disabled={!hasNext}
+                    >
+                      <LoadingLink
+                        href={`/category/${params.slug}${hasNext ? `?page=${currentPage + 1}` : ''}`}
+                        loadingLabel="Loading category…"
+                      >
+                        Next
+                      </LoadingLink>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </main>
@@ -201,7 +272,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CategoryPageProps) {
-  const category = await getCategoryMeta(params.slug)
+  const category = await prisma.category.findUnique({
+    where: { slug: params.slug },
+    select: {
+      name: true,
+      description: true,
+    },
+  })
 
   if (!category) {
     return {

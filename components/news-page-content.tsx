@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { NewsHeader, SortOption } from '@/components/news-header'
 import { NewsGrid } from '@/components/news-grid'
@@ -94,12 +94,7 @@ export function NewsPageContent({
     setPage(1)
   }, [searchParams])
 
-  // Fetch posts when filters change
-  useEffect(() => {
-    fetchPosts()
-  }, [selectedCategory, submittedSearch, sortBy, page])
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     // Cancel any in-flight request so we don't spam the server/DB with parallel queries
     fetchControllerRef.current?.abort()
     const controller = new AbortController()
@@ -151,7 +146,12 @@ export function NewsPageContent({
         setLoading(false)
       }
     }
-  }
+  }, [page, selectedCategory, sortBy, submittedSearch])
+
+  // Fetch posts when filters change
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
 
   // Sort posts based on selected sort option
   const sortedPosts = useMemo(() => {

@@ -132,7 +132,7 @@ export function EditTagForm({ tag }: EditTagFormProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Tag</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{tag.name}"? This action cannot be undone.
+                  Are you sure you want to delete &quot;{tag.name}&quot;? This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -272,7 +272,7 @@ export function PostsTable({ posts }: PostsTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Post</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletePost?.title}"?
+              Are you sure you want to delete &quot;{deletePost?.title}&quot;?
               This action cannot be undone and will permanently remove the post and all its data.
             </AlertDialogDescription>
           </AlertDialogHeader>

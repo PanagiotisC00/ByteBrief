@@ -1,8 +1,9 @@
 // Clearance: show immediate feedback between click and route-level loading.tsx
 'use client'
 
-import { createContext, useContext, useMemo, useState, useCallback } from 'react'
+import { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react'
 import type { PropsWithChildren } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const DEFAULT_MESSAGE = 'Loading content…'
 
@@ -18,6 +19,8 @@ export function NavigationFeedbackProvider({ children }: PropsWithChildren) {
     active: false,
     message: DEFAULT_MESSAGE,
   })
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const startNavigation = useCallback((message?: string) => {
     setOverlayState({
@@ -37,6 +40,12 @@ export function NavigationFeedbackProvider({ children }: PropsWithChildren) {
     }),
     [startNavigation, finishNavigation]
   )
+
+  const locationKey = `${pathname || '/'}?${searchParams?.toString() ?? ''}`
+
+  useEffect(() => {
+    finishNavigation()
+  }, [locationKey, finishNavigation])
 
   return (
     <NavigationFeedbackContext.Provider value={value}>

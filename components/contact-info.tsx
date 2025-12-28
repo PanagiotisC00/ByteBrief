@@ -84,18 +84,42 @@ export function ContactInfo() {
         <CardContent className="space-y-4 pt-2">
           {socialLinks.map((social) => {
             const isInternal = social.href.startsWith("/")
-            const LinkComponent = isInternal ? LoadingLink : Link
+            // Clearance: never spread `key` through a props object (React warning); pass it directly
             const commonProps = {
-              key: social.label,
               href: social.href,
               className:
                 "flex items-center p-4 rounded-lg bg-gradient-to-br from-accent/5 via-accent/3 to-primary/5 border border-accent/10 hover:border-accent/30 hover:shadow-md transition-all duration-300 group overflow-hidden",
             }
+            if (isInternal) {
+              return (
+                <LoadingLink key={social.label} {...commonProps} loadingLabel="Loading content…">
+                  <div className="flex items-center space-x-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/20 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300 flex-shrink-0">
+                      <social.icon className="h-6 w-6 text-white transition-colors duration-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-white text-lg transition-colors duration-300">
+                          {social.label}
+                        </p>
+                        {social.isComingSoon && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-accent/15 text-accent text-xs font-semibold border border-accent/20 ml-2"
+                          >
+                            Coming Soon
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-white/80 font-medium mt-1 break-words">{social.handle}</p>
+                    </div>
+                  </div>
+                </LoadingLink>
+              )
+            }
+
             return (
-              <LinkComponent
-                {...commonProps}
-                {...(isInternal ? { loadingLabel: "Loading content…" } : {})}
-              >
+              <Link key={social.label} {...commonProps}>
                 <div className="flex items-center space-x-4 min-w-0 flex-1">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/20 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300 flex-shrink-0">
                     <social.icon className="h-6 w-6 text-white transition-colors duration-300" />
@@ -114,7 +138,7 @@ export function ContactInfo() {
                     <p className="text-sm text-white/80 font-medium mt-1 break-words">{social.handle}</p>
                   </div>
                 </div>
-              </LinkComponent>
+              </Link>
             )
           })}
         </CardContent>
