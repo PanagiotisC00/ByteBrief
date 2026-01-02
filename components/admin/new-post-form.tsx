@@ -11,13 +11,13 @@ import { RichTextEditor } from '@/components/admin/rich-text-editor'
 import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { X, Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/image-upload'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { NewCategoryForm } from '@/components/admin/new-category-form'
 import { NewTagForm } from '@/components/admin/new-tag-form'
+import { TagSelector } from '@/components/admin/tag-selector'
 import { toast } from 'sonner'
 
 // Types
@@ -49,7 +49,7 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
   const [categoriesState, setCategoriesState] = useState(categories)
   const [tagsState, setTagsState] = useState(tags)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [editorMode, setEditorMode] = useState<'richtext' | 'markdown'>('richtext')
+  const [editorMode, setEditorMode] = useState<'richtext' | 'markdown'>('markdown')
 
   // Form state
   const [formData, setFormData] = useState({
@@ -156,14 +156,13 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
   }
 
   const toggleTag = (tagId: string) => {
+    markDirty()
     setSelectedTags(prev =>
       prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
     )
   }
-
-  const selectedTagObjectsState = tagsState.filter(tag => selectedTags.includes(tag.id))
 
   return (
     <>
@@ -203,8 +202,8 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
                   <Label htmlFor="content">Content *</Label>
                   <Tabs value={editorMode} onValueChange={(v) => setEditorMode(v as 'richtext' | 'markdown')}>
                     <TabsList className="h-8">
-                      <TabsTrigger value="richtext" className="text-xs px-3 h-7">Rich Text</TabsTrigger>
                       <TabsTrigger value="markdown" className="text-xs px-3 h-7">Markdown</TabsTrigger>
+                      <TabsTrigger value="richtext" className="text-xs px-3 h-7">Rich Text</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -298,8 +297,7 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
               </Select>
               <Button
                 type="button"
-                variant="outline"
-                className="mt-3 w-full hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-100"
+                className="mt-3 w-full border-transparent bg-[#7fffc1] text-[#0f1f16] hover:bg-secondary hover:text-secondary-foreground"
                 onClick={() => setIsCategoryDialogOpen(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -313,57 +311,13 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
             <CardHeader>
               <CardTitle>Tags</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedTagObjectsState.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedTagObjectsState.map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
-                      {tag.name}
-                      <button
-                        type="button"
-                        onClick={() => toggleTag(tag.id)}
-                        className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label>Available Tags</Label>
-                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                  {tagsState.map((tag) => {
-                    const isSelected = selectedTags.includes(tag.id)
-                    return (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => { if (!isSelected) { markDirty(); toggleTag(tag.id) } }}
-                        disabled={isSelected}
-                        className={`inline-flex items-center gap-1 px-2 py-1 text-sm rounded-md transition-colors
-                          ${isSelected
-                            ? 'bg-muted/60 text-muted-foreground cursor-not-allowed'
-                            : 'bg-muted hover:bg-muted-foreground/20'}
-                        `}
-                      >
-                        {!isSelected && <Plus className="h-3 w-3" />}
-                        {tag.name}
-                      </button>
-                    )
-                  })}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-2 w-full hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-100"
-                  onClick={() => setIsTagDialogOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create tag
-                </Button>
-              </div>
+            <CardContent>
+              <TagSelector
+                tags={tagsState}
+                selectedTagIds={selectedTags}
+                onToggle={toggleTag}
+                onCreate={() => setIsTagDialogOpen(true)}
+              />
             </CardContent>
           </Card>
 
@@ -443,6 +397,7 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
         <NewTagForm
           mode="dialog"
           onCreated={(tag) => {
+            markDirty()
             setTagsState((prev) => [...prev, tag])
             setSelectedTags((prev) => prev.includes(tag.id) ? prev : [...prev, tag.id])
             setIsTagDialogOpen(false)

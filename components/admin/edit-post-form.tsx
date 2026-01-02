@@ -11,12 +11,13 @@ import { RichTextEditor } from '@/components/admin/rich-text-editor'
 import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { ImageUpload } from '@/components/admin/image-upload'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { NewTagForm } from '@/components/admin/new-tag-form'
+import { TagSelector } from '@/components/admin/tag-selector'
 
 // Types
 type Category = {
@@ -69,6 +70,7 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false)
 
   // Initialize form with existing post data
   const [formData, setFormData] = useState({
@@ -82,16 +84,13 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
     status: post.status,
   })
 
+  const [tagsState, setTagsState] = useState(tags)
+
   const [selectedTags, setSelectedTags] = useState<string[]>(
     post.tags.map(pt => pt.tag.id)
   )
 
-  // Auto-detect editor mode: if content has HTML tags, use richtext; otherwise markdown
-  const detectEditorMode = (content: string): 'richtext' | 'markdown' => {
-    const hasHtmlTags = /<[a-z][\s\S]*>/i.test(content)
-    return hasHtmlTags ? 'richtext' : 'markdown'
-  }
-  const [editorMode, setEditorMode] = useState<'richtext' | 'markdown'>(detectEditorMode(post.content))
+  const [editorMode, setEditorMode] = useState<'richtext' | 'markdown'>('markdown')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -153,9 +152,8 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
     )
   }
 
-  const selectedTagObjects = tags.filter(tag => selectedTags.includes(tag.id))
-
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -192,8 +190,8 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
                   <Label htmlFor="content">Content *</Label>
                   <Tabs value={editorMode} onValueChange={(v) => setEditorMode(v as 'richtext' | 'markdown')}>
                     <TabsList className="h-8">
-                      <TabsTrigger value="richtext" className="text-xs px-3 h-7">Rich Text</TabsTrigger>
                       <TabsTrigger value="markdown" className="text-xs px-3 h-7">Markdown</TabsTrigger>
+                      <TabsTrigger value="richtext" className="text-xs px-3 h-7">Rich Text</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -294,40 +292,13 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
             <CardHeader>
               <CardTitle>Tags</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedTagObjects.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedTagObjects.map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
-                      {tag.name}
-                      <button
-                        type="button"
-                        onClick={() => toggleTag(tag.id)}
-                        className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label>Available Tags</Label>
-                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                  {tags.filter(tag => !selectedTags.includes(tag.id)).map((tag) => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => toggleTag(tag.id)}
-                      className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-muted hover:bg-muted-foreground/20 rounded-md transition-colors"
-                    >
-                      <Plus className="h-3 w-3" />
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <CardContent>
+              <TagSelector
+                tags={tagsState}
+                selectedTagIds={selectedTags}
+                onToggle={toggleTag}
+                onCreate={() => setIsTagDialogOpen(true)}
+              />
             </CardContent>
           </Card>
 
@@ -398,5 +369,24 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
         </Button>
       </div>
     </form>
+
+    <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Create Tag</DialogTitle>
+          <DialogDescription>Add a new tag without leaving the post form.</DialogDescription>
+        </DialogHeader>
+        <NewTagForm
+          mode="dialog"
+          onCreated={(tag) => {
+            setTagsState((prev) => [...prev, tag])
+            setSelectedTags((prev) => (prev.includes(tag.id) ? prev : [...prev, tag.id]))
+            setIsTagDialogOpen(false)
+          }}
+          onCancel={() => setIsTagDialogOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
