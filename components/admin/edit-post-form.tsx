@@ -12,10 +12,11 @@ import { MarkdownEditor } from '@/components/admin/markdown-editor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { ImageUpload } from '@/components/admin/image-upload'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { NewCategoryForm } from '@/components/admin/new-category-form'
 import { NewTagForm } from '@/components/admin/new-tag-form'
 import { TagSelector } from '@/components/admin/tag-selector'
 
@@ -70,7 +71,9 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false)
+  const [categoriesState, setCategoriesState] = useState(categories)
 
   // Initialize form with existing post data
   const [formData, setFormData] = useState({
@@ -269,7 +272,7 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
                   <SelectValue placeholder="Select category..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
+                  {categoriesState.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       <div className="flex items-center space-x-2">
                         {category.color && (
@@ -284,6 +287,14 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                type="button"
+                className="mt-3 w-full border-transparent bg-[#7fffc1] text-[#0f1f16] hover:bg-secondary hover:text-secondary-foreground"
+                onClick={() => setIsCategoryDialogOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create category
+              </Button>
             </CardContent>
           </Card>
 
@@ -384,6 +395,24 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
             setIsTagDialogOpen(false)
           }}
           onCancel={() => setIsTagDialogOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Create Category</DialogTitle>
+          <DialogDescription>Add a new category without leaving the post form.</DialogDescription>
+        </DialogHeader>
+        <NewCategoryForm
+          mode="dialog"
+          onCreated={(category) => {
+            setCategoriesState((prev) => [...prev, category])
+            setFormData((prev) => ({ ...prev, categoryId: category.id }))
+            setIsCategoryDialogOpen(false)
+          }}
+          onCancel={() => setIsCategoryDialogOpen(false)}
         />
       </DialogContent>
     </Dialog>

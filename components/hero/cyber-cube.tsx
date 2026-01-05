@@ -2,7 +2,7 @@
 
 // Clearance: lightweight SVG cube with Framer Motion transforms (no canvas) to keep the hero animation performant on Vercel.
 import type React from 'react'
-import { m, useReducedMotion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 type CyberCubeProps = {
   className?: string
@@ -16,7 +16,6 @@ const sizeToSvgClassName: Record<NonNullable<CyberCubeProps['size']>, string> = 
 }
 
 export function CyberCube({ className, size = 'lg' }: CyberCubeProps) {
-  const shouldReduceMotion = useReducedMotion()
   const svgClassName = sizeToSvgClassName[size]
 
   return (
@@ -27,26 +26,20 @@ export function CyberCube({ className, size = 'lg' }: CyberCubeProps) {
         transformStyle: 'preserve-3d',
         perspective: '1000px'
       }}
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={
-        shouldReduceMotion
-          ? { opacity: 1, scale: 1 }
-          : {
-              opacity: 1,
-              scale: [1, 1.05, 1],
-            }
-      }
-      transition={
-        shouldReduceMotion
-          ? { duration: 0.35, ease: 'easeOut' }
-          : {
-              scale: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
-            }
-      }
+      initial={{ opacity: 0, scale: 0.98, y: 8 }}
+      animate={{
+        opacity: 1,
+        scale: [1, 1.05, 1], // Subtle scale pulse
+        y: [0, -5, 0], // Subtle float
+      }}
+      transition={{
+        scale: { duration: 2.5, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' },
+        y: { duration: 4.5, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' },
+      }}
     >
       <div className="relative" style={{ transformStyle: 'preserve-3d' }}>
         <m.svg
-          viewBox="0 0 120 100"
+          viewBox="0 0 120 110"
           className={`${svgClassName} drop-shadow-lg`}
           fill="none"
           strokeLinecap="round"
@@ -198,23 +191,16 @@ export function CyberCube({ className, size = 'lg' }: CyberCubeProps) {
         <m.div 
           className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-orange-500/30 via-orange-400/20 to-transparent blur-3xl" 
           style={{ boxShadow: '0 0 60px rgba(255, 120, 0, 0.4)' }}
-          animate={
-            shouldReduceMotion
-              ? {}
-              : {
-                  opacity: [0.6, 1, 0.6],
-                  scale: [1, 1.1, 1],
-                }
-          }
-          transition={
-            shouldReduceMotion
-              ? {}
-              : {
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }
-          }
+          animate={{
+            opacity: [0.6, 1, 0.6],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            repeatType: 'mirror',
+            ease: 'easeInOut',
+          }}
         />
       </div>
     </m.div>

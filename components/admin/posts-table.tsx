@@ -1,19 +1,13 @@
 // Posts management table component
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +52,8 @@ interface PostsTableProps {
 }
 
 export function PostsTable({ posts }: PostsTableProps) {
+  const router = useRouter()
+  const pointerDownTarget = useRef<HTMLElement | null>(null)
   const [deletePost, setDeletePost] = useState<PostWithDetails | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [sortKey, setSortKey] = useState<'updatedAt' | 'status' | 'category'>('updatedAt')
@@ -135,21 +131,43 @@ export function PostsTable({ posts }: PostsTableProps) {
     })
   }, [posts, sortDir, sortKey])
 
-  return (
-    <div className="rounded-md border">
+  const handleCardClick = (event: React.MouseEvent<HTMLElement>, postId: string) => {
+    if (event.defaultPrevented) return
+    const target = (pointerDownTarget.current ?? event.target) as HTMLElement | null
+    pointerDownTarget.current = null
+    if (target?.closest('[data-card-ignore="true"], a, button, [role=\"menuitem\"]')) return
+    router.push(`/admin/posts/${postId}`)
+  }
 
+  return (
+    <div className="space-y-4">
       {/* Sort toolbar (client-side display sorting only) */}
-      <div className="flex flex-wrap items-center gap-3 p-3 border-b border-border">
+      <div className="flex flex-wrap items-center gap-3 rounded-md border border-border p-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Sort by</span>
           <Select value={sortKey} onValueChange={(v) => setSortKey(v as typeof sortKey)}>
-            <SelectTrigger className="h-9 w-44">
+            <SelectTrigger className="h-9 w-44 !bg-primary !text-primary-foreground !border-transparent hover:!bg-[#7fffc1] hover:!text-[#0f1f16] data-[state=open]:!bg-[#7fffc1] data-[state=open]:!text-[#0f1f16] hover:[&_svg]:!text-[#0f1f16] data-[state=open]:[&_svg]:!text-[#0f1f16]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="updatedAt">Last updated</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-              <SelectItem value="category">Category</SelectItem>
+            <SelectContent className="bg-card text-card-foreground border-border">
+              <SelectItem
+                value="updatedAt"
+                className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[highlighted]:bg-[#7fffc1] data-[highlighted]:text-[#0f1f16]"
+              >
+                Last updated
+              </SelectItem>
+              <SelectItem
+                value="status"
+                className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[highlighted]:bg-[#7fffc1] data-[highlighted]:text-[#0f1f16]"
+              >
+                Status
+              </SelectItem>
+              <SelectItem
+                value="category"
+                className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[highlighted]:bg-[#7fffc1] data-[highlighted]:text-[#0f1f16]"
+              >
+                Category
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -161,11 +179,7 @@ export function PostsTable({ posts }: PostsTableProps) {
             variant="outline"
             size="sm"
             onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
-            className={`inline-flex items-center gap-2 border ${
-              sortDir === 'desc'
-                ? 'hover:bg-green-100 hover:text-green-800 border-green-200 dark:hover:bg-green-900/50 dark:hover:text-green-100'
-                : 'hover:bg-green-100 hover:text-green-800 border-green-200 dark:hover:bg-green-900/50 dark:hover:text-green-100'
-            }`}
+            className="inline-flex items-center gap-2 !bg-primary !text-primary-foreground !border-transparent hover:!bg-[#7fffc1] hover:!text-[#0f1f16]"
           >
             <ArrowDownUp className="h-4 w-4" />
             {sortDir === 'asc' ? 'Asc' : 'Desc'}
@@ -173,86 +187,90 @@ export function PostsTable({ posts }: PostsTableProps) {
         </div>
       </div>
 
-      <Table className="w-full table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="px-4 w-[32%]">Title</TableHead>
-            <TableHead className="px-4 w-[12%]">Status</TableHead>
-            <TableHead className="px-4 w-[16%]">Category</TableHead>
-            <TableHead className="px-4 w-[18%]">Author</TableHead>
-            <TableHead className="px-4 w-[14%]">Published</TableHead>
-            <TableHead className="px-4 w-[8%] text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedPosts.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                No posts found. Create your first post to get started.
-              </TableCell>
-            </TableRow>
-          ) : (
-            sortedPosts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center space-x-2">
+      {sortedPosts.length === 0 ? (
+        <div className="rounded-md border border-border py-10 text-center text-muted-foreground">
+          No posts found. Create your first post to get started.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {sortedPosts.map((post) => (
+            <Card
+              key={post.id}
+              role="button"
+              tabIndex={0}
+              onPointerDown={(event) => {
+                pointerDownTarget.current = event.target as HTMLElement | null
+              }}
+              onClick={(event) => handleCardClick(event, post.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  router.push(`/admin/posts/${post.id}`)
+                }
+              }}
+              className="border-border/70 bg-card/95 cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <CardHeader className="space-y-3 pb-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-2">
                     <Link
                       href={`/admin/posts/${post.id}`}
-                      className="hover:text-accent transition-colors line-clamp-1"
-                      title={post.title}
+                      data-card-ignore="true"
+                      className="text-lg font-semibold text-foreground transition-colors hover:text-accent break-words"
                     >
                       {post.title}
                     </Link>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <Badge className={getStatusColor(post.status)}>
+                        {post.status.toLowerCase()}
+                      </Badge>
+                      <div className="flex items-center gap-1">
+                        {post.category.color && (
+                          <div
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: post.category.color }}
+                          />
+                        )}
+                        <span>{post.category.name}</span>
+                      </div>
+                    </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(post.status)}>
-                    {post.status.toLowerCase()}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    {post.category.color && (
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: post.category.color }}
-                      />
-                    )}
-                    <span>{post.category.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{post.author.name || post.author.email}</TableCell>
-
-                <TableCell>
-                  {post.publishedAt ? (
-                    format(new Date(post.publishedAt), 'MMM dd, yyyy')
-                  ) : (
-                    <span className="text-muted-foreground">Not published</span>
-                  )}
-                </TableCell>
-                <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-muted"
+                        data-card-ignore="true"
+                      >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent
+                      align="end"
+                      data-card-ignore="true"
+                      onClick={(event) => event.stopPropagation()}
+                      onPointerDown={(event) => event.stopPropagation()}
+                    >
                       <DropdownMenuItem asChild>
-                        <Link href={`/blog/${post.slug}`} className="flex items-center">
+                        <Link href={`/blog/${post.slug}`} className="flex items-center" data-card-ignore="true">
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={`/admin/posts/${post.id}`} className="flex items-center">
+                        <Link href={`/admin/posts/${post.id}`} className="flex items-center" data-card-ignore="true">
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setDeletePost(post)}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setDeletePost(post)
+                        }}
+                        data-card-ignore="true"
                         className="flex items-center text-destructive focus:text-destructive"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -260,12 +278,23 @@ export function PostsTable({ posts }: PostsTableProps) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <span>Author: {post.author.name || post.author.email}</span>
+                  <span>Updated {format(new Date(post.updatedAt), 'MMM dd, yyyy')}</span>
+                  {post.publishedAt ? (
+                    <span>Published {format(new Date(post.publishedAt), 'MMM dd, yyyy')}</span>
+                  ) : (
+                    <span>Not published</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <AlertDialog open={!!deletePost} onOpenChange={() => setDeletePost(null)}>
         <AlertDialogContent>

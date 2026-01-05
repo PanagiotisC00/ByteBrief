@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
           <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
           <p className="text-muted-foreground mt-2">Manage your ByteBrief blog content</p>
         </div>
-        <Button asChild className="bg-primary hover:bg-primary/90">
+        <Button asChild className="bg-primary text-primary-foreground hover:bg-[#7fffc1] hover:text-[#0f1f16]">
           <Link href="/admin/posts/new">
             <PlusCircle className="h-4 w-4 mr-2" />
             New Post

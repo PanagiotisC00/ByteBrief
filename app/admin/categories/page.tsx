@@ -45,7 +45,7 @@ export default async function CategoriesPage() {
             Manage your blog categories and organize your content
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-primary text-primary-foreground hover:bg-[#7fffc1] hover:text-[#0f1f16]">
           <Link href="/admin/categories/new">
             <Plus className="h-4 w-4 mr-2" />
             New Category

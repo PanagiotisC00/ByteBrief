@@ -279,8 +279,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <h3 className="text-lg font-semibold text-foreground mb-4">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((tag: any) => (
-                    <Badge key={tag.id} variant="secondary">
-                      {tag.name}
+                    <Badge
+                      key={tag.id}
+                      variant="default"
+                      asChild
+                      className="hover:!bg-[#7fffc1] hover:!text-[#0f1f16]"
+                    >
+                      <LoadingLink href={`/tag/${tag.slug}`} loadingLabel="Loading tag.">
+                        {tag.name}
+                      </LoadingLink>
                     </Badge>
                   ))}
                 </div>

@@ -58,6 +58,7 @@ function PaginationLink({
           variant: isActive ? 'outline' : 'ghost',
           size,
         }),
+        size === 'icon' ? 'size-8 rounded-full' : 'rounded-full',
         className,
       )}
       {...props}

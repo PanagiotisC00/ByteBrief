@@ -2,15 +2,13 @@
 
 // Clearance: Asteroid-like particles moving in zig-zag patterns with neon orange theme.
 import type React from 'react'
-import { m, useReducedMotion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 type CircuitBackdropProps = {
   className?: string
 }
 
 export function CircuitBackdrop({ className }: CircuitBackdropProps) {
-  const shouldReduceMotion = useReducedMotion()
-
   // Clearance: asteroid particles with different zig-zag trajectories moving in/out of screen
   const asteroidPaths = [
     { d: 'M-50 100 L200 80 L450 140 L700 110 L950 160 L1250 130', delay: 0, duration: 8 },
@@ -50,11 +48,11 @@ export function CircuitBackdrop({ className }: CircuitBackdropProps) {
               opacity={0.4}
               strokeDasharray="8 12"
               initial={{ strokeDashoffset: 0, pathLength: 0 }}
-              animate={shouldReduceMotion ? { pathLength: 0.6 } : { 
+              animate={{ 
                 strokeDashoffset: [-100, 100],
                 pathLength: [0, 1, 0.8, 0]
               }}
-              transition={shouldReduceMotion ? { duration: 0.3 } : {
+              transition={{
                 strokeDashoffset: { duration: pathData.duration, repeat: Infinity, ease: 'linear' },
                 pathLength: { duration: pathData.duration, repeat: Infinity, ease: 'easeInOut', delay: pathData.delay }
               }}
@@ -66,31 +64,31 @@ export function CircuitBackdrop({ className }: CircuitBackdropProps) {
         {/* Clearance: small static particles with subtle pulse for depth effect. */}
         <g fill="#FF7800" opacity={0.3}>
           <m.circle cx="150" cy="120" r="2"
-            animate={shouldReduceMotion ? {} : { opacity: [0.2, 0.5, 0.2], scale: [1, 1.3, 1] }}
+            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.3, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
           <m.circle cx="400" cy="200" r="2.5"
-            animate={shouldReduceMotion ? {} : { opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
+            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
           />
           <m.circle cx="650" cy="150" r="2"
-            animate={shouldReduceMotion ? {} : { opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1] }}
+            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
           />
           <m.circle cx="900" cy="280" r="3"
-            animate={shouldReduceMotion ? {} : { opacity: [0.3, 0.7, 0.3], scale: [1, 1.5, 1] }}
+            animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.5, 1] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
           />
           <m.circle cx="1050" cy="180" r="2"
-            animate={shouldReduceMotion ? {} : { opacity: [0.2, 0.4, 0.2], scale: [1, 1.3, 1] }}
+            animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.3, 1] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
           />
           <m.circle cx="300" cy="380" r="2.5"
-            animate={shouldReduceMotion ? {} : { opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
+            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
             transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
           />
           <m.circle cx="750" cy="450" r="2"
-            animate={shouldReduceMotion ? {} : { opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1] }}
+            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1] }}
             transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
           />
         </g>

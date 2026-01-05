@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingLink } from '@/components/ui/loading-link'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -40,26 +41,27 @@ export function AdminNavigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/admin" className="flex items-center space-x-2 group">
+          <LoadingLink href="/admin" className="flex items-center space-x-2 group" loadingLabel="Loading admin.">
             <Code2 className="h-8 w-8 text-primary group-hover:text-accent transition-colors" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               ByteBrief Admin
             </span>
-          </Link>
+          </LoadingLink>
 
           {/* Desktop Navigation Items */}
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <Link
+                <LoadingLink
                   key={item.href}
                   href={item.href}
+                  loadingLabel={`Loading ${item.label.toLowerCase()}.`}
                   className="flex items-center space-x-1 text-muted-foreground hover:text-accent transition-colors font-medium"
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
-                </Link>
+                </LoadingLink>
               )
             })}
           </div>
@@ -114,15 +116,16 @@ export function AdminNavigation() {
               {navItems.map((item) => {
                 const Icon = item.icon
                 return (
-                  <Link
+                  <LoadingLink
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
+                    loadingLabel={`Loading ${item.label.toLowerCase()}.`}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted/50 transition-colors font-medium"
                   >
                     <Icon className="h-5 w-5" />
                     <span>{item.label}</span>
-                  </Link>
+                  </LoadingLink>
                 )
               })}
               

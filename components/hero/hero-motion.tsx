@@ -11,7 +11,8 @@ type HeroMotionProviderProps = {
 export function HeroMotionProvider({ children }: HeroMotionProviderProps) {
   return (
     <LazyMotion features={domAnimation} strict>
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      {/* Clearance: force animations to play even if user has 'reduce motion' enabled (reducedMotion="never") */}
+      <MotionConfig reducedMotion="never">{children}</MotionConfig>
     </LazyMotion>
   )
 }

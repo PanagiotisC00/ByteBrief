@@ -1,18 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -29,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Edit, Trash2, FolderOpen } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, FolderOpen, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 type CategoryWithCount = {
@@ -53,6 +46,22 @@ interface CategoriesTableProps {
 export function CategoriesTable({ categories }: CategoriesTableProps) {
   const [deleteCategory, setDeleteCategory] = useState<CategoryWithCount | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const pointerDownTarget = useRef<HTMLElement | null>(null)
+  const [query, setQuery] = useState('')
+  const searchId = useId()
+  const normalizedQuery = query.trim().toLowerCase()
+
+  const filteredCategories = useMemo(() => {
+    if (!normalizedQuery) return categories
+    return categories.filter((category) => {
+      const description = category.description?.toLowerCase() ?? ''
+      return (
+        category.name.toLowerCase().includes(normalizedQuery) ||
+        category.slug.toLowerCase().includes(normalizedQuery) ||
+        description.includes(normalizedQuery)
+      )
+    })
+  }, [categories, normalizedQuery])
 
   const handleDelete = async () => {
     if (!deleteCategory) return
@@ -97,88 +106,119 @@ export function CategoriesTable({ categories }: CategoriesTableProps) {
 
   return (
     <>
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Posts</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell>
-                  <div className="flex items-center space-x-3">
-                    <div 
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: category.color || '#3B82F6' }}
-                    />
-                    <div>
-                      <div className="font-semibold text-foreground">
-                        <Link 
-                          href={`/category/${category.slug}`}
-                          className="hover:text-accent transition-colors"
-                          target="_blank"
-                        >
-                          {category.name}
-                        </Link>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        /{category.slug}
-                      </div>
-                      {category.description && (
-                        <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                          {category.description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                    {category._count.posts} post{category._count.posts !== 1 ? 's' : ''}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(category.createdAt), { addSuffix: true })}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link 
-                          href={`/admin/categories/${category.id}`}
-                          className="flex items-center"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setDeleteCategory(category)}
-                        className="flex items-center text-destructive focus:text-destructive"
-                        disabled={category._count.posts > 0}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full max-w-md">
+          <label htmlFor={searchId} className="sr-only">Search categories</label>
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            id={searchId}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search categories..."
+            className="pl-8"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {filteredCategories.length} result{filteredCategories.length === 1 ? '' : 's'}
+        </p>
       </div>
+
+      {filteredCategories.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border/60 bg-card/40 p-8 text-center text-sm text-muted-foreground">
+          No categories match your search.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredCategories.map((category) => (
+            <div
+              key={category.id}
+              role="link"
+              tabIndex={0}
+              onPointerDown={(event) => {
+                pointerDownTarget.current = event.target as HTMLElement | null
+              }}
+              onClick={(event) => {
+                const target = (pointerDownTarget.current ?? event.target) as HTMLElement | null
+                pointerDownTarget.current = null
+                if (target?.closest('[data-card-ignore="true"]')) return
+                window.open(`/category/${category.slug}`, '_blank', 'noopener,noreferrer')
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  window.open(`/category/${category.slug}`, '_blank', 'noopener,noreferrer')
+                }
+              }}
+              className="rounded-lg border border-border/60 bg-card p-4 cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-4 w-4 rounded"
+                    style={{ backgroundColor: category.color || '#3B82F6' }}
+                  />
+                  <div>
+                    <div className="font-semibold text-foreground">
+                      <Link
+                      href={`/category/${category.slug}`}
+                      data-card-ignore="true"
+                      className="hover:text-accent transition-colors"
+                      target="_blank"
+                    >
+                      {category.name}
+                    </Link>
+                    </div>
+                    <div className="text-xs text-muted-foreground">/{category.slug}</div>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-muted"
+                      data-card-ignore="true"
+                    >
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild data-card-ignore="true">
+                      <Link href={`/admin/categories/${category.id}`} className="flex items-center">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setDeleteCategory(category)}
+                      data-card-ignore="true"
+                      className="flex items-center text-destructive focus:text-destructive"
+                      disabled={category._count.posts > 0}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {category.description && (
+                <p className="mt-3 text-sm text-muted-foreground line-clamp-3">
+                  {category.description}
+                </p>
+              )}
+
+              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                  {category._count.posts} post{category._count.posts !== 1 ? 's' : ''}
+                </Badge>
+                <span>{formatDistanceToNow(new Date(category.createdAt), { addSuffix: true })}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <AlertDialog open={!!deleteCategory} onOpenChange={() => setDeleteCategory(null)}>
         <AlertDialogContent>

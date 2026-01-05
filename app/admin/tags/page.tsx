@@ -47,7 +47,7 @@ export default async function TagsPage() {
             Manage your blog tags and organize your content with keywords
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-primary text-primary-foreground hover:bg-[#7fffc1] hover:text-[#0f1f16]">
           <Link href="/admin/tags/new">
             <Plus className="h-4 w-4 mr-2" />
             New Tag

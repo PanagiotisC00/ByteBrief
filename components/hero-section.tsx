@@ -1,16 +1,35 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, Clock, User, Calendar } from "lucide-react"
-import { FallbackImage } from "@/components/ui/fallback-image"
 import { LoadingLink } from "@/components/ui/loading-link"
 import { format } from "date-fns"
 import { AnimatePresence, m, type Variants } from "framer-motion"
 import { HeroMotionProvider } from "@/components/hero/hero-motion"
 import { CircuitBackdrop } from "@/components/hero/circuit-backdrop"
 import { CyberCube } from "@/components/hero/cyber-cube"
+
+// Clearance: Optimized image component for Hero to prevent layout shift and mobile lag
+function HeroImage({ src, alt, className }: { src: string | null; alt: string; className?: string }) {
+  const [imgSrc, setImgSrc] = useState(src || "/bytebrief-logo.png")
+  
+  return (
+    <div className={`relative ${className}`}>
+      <Image
+        src={imgSrc}
+        alt={alt}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority
+        onError={() => setImgSrc("/bytebrief-logo.png")}
+      />
+    </div>
+  )
+}
 
 // Clearance: orchestrated hero entrance animations are isolated to the hero to keep the rest of the site unaffected.
 const heroContainerVariants: Variants = {
@@ -195,12 +214,13 @@ export function HeroSection({ featuredArticles }: HeroSectionProps) {
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <LoadingLink href={`/blog/${currentArticle.slug}`} className="block" loadingLabel="Loading article…">
-                    <Card className="overflow-hidden bg-card/50 backdrop-blur border-border/50 cursor-pointer hover:border-primary/50 transition-all duration-300">
+                    {/* Clearance: reduce transparency and remove blur on mobile for better performance */}
+                    <Card className="overflow-hidden bg-card/95 md:bg-card/50 md:backdrop-blur border-border/50 cursor-pointer hover:border-primary/50 transition-all duration-300">
                       <div className="relative">
-                        <FallbackImage
+                        <HeroImage
                           src={currentArticle.image}
                           alt={currentArticle.title}
-                          className="w-full h-64 object-contain bg-muted/50"
+                          className="w-full h-64 bg-muted/50"
                         />
                         <div className="absolute top-4 left-4">
                           <span
