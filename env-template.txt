@@ -9,8 +9,8 @@ DIRECT_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase
 # Supabase Configuration
 # Get these from your Supabase project settings > API
 NEXT_PUBLIC_SUPABASE_URL="https://[YOUR-PROJECT-REF].supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR-ANON-KEY]"
-SUPABASE_SERVICE_ROLE_KEY="[YOUR-SERVICE-ROLE-KEY]"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="[YOUR-PUBLISHABLE-KEY]"
+SUPABASE_SECRET_KEY="[YOUR-SECRET-KEY]"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="[YOUR-SECRET-KEY]"  # Generate with: openssl rand -base64 32
