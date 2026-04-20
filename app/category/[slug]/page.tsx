@@ -10,6 +10,8 @@ import { LoadingLink } from "@/components/ui/loading-link"
 import { formatDistanceToNow } from "date-fns"
 import { notFound } from "next/navigation"
 
+export const dynamic = 'force-dynamic'
+
 const CATEGORY_PAGE_SIZE = 9
 
 interface CategoryPageProps {

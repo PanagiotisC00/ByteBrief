@@ -15,6 +15,8 @@ import { BlogContent } from "@/components/blog-content"
 import type { Metadata } from 'next'
 import { LoadingLink } from "@/components/ui/loading-link"
 
+export const dynamic = 'force-dynamic'
+
 interface BlogPostPageProps {
   params: {
     slug: string

@@ -9,6 +9,8 @@ import { formatDistanceToNow } from "date-fns"
 import type { Metadata } from 'next'
 import { LoadingLink } from "@/components/ui/loading-link"
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Blog - Latest Tech Articles & Insights',
   description: 'Explore our collection of in-depth tech articles, tutorials, and insights covering web development, AI, software engineering, and the latest technology trends.',

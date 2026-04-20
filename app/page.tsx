@@ -5,6 +5,8 @@ import { LatestNews } from "@/components/latest-news"
 import { TechCategories } from "@/components/tech-categories"
 import { getLatestPosts, getLatestNews, getCategories } from "@/lib/blog"
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   // Clearance: fetch homepage data in parallel so the landing view renders faster
   const [latestPosts, latestNews, categories] = await Promise.all([

@@ -4,6 +4,8 @@ import { NewsPageContent } from "@/components/news-page-content"
 import { getCategories } from "@/lib/blog"
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Tech News - Latest Technology Updates & Breaking News',
   description: 'Stay updated with the latest tech news, breaking technology updates, industry insights, and trending topics in AI, web development, software engineering, and more.',
