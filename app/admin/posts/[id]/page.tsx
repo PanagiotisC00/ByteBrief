@@ -51,7 +51,7 @@ async function getTags() {
   })
 }
 
-export default async function EditPostPage({ params }: { params: { id: string } }) {
+export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   // Check authentication
   const session = await getCurrentSession()
   
@@ -59,8 +59,10 @@ export default async function EditPostPage({ params }: { params: { id: string } 
     redirect('/admin/login')
   }
 
+  const { id } = await params
+
   // Clearance: avoid parallel Prisma queries on serverless to reduce connection pool contention
-  const post = await getPost(params.id)
+  const post = await getPost(id)
   const categories = await getCategories()
   const tags = await getTags()
 

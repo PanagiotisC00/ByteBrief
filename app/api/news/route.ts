@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getNewsPosts } from '@/lib/blog'
+import { newsSortSchema } from '@/lib/validation/admin'
 
 const DEFAULT_PAGE_SIZE = 9
 
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
     const pageSize = Number.isFinite(pageSizeParam)
       ? Math.max(1, Math.min(Math.floor(pageSizeParam), DEFAULT_PAGE_SIZE))
       : DEFAULT_PAGE_SIZE
-    const sortBy = (sortParam as 'date-desc' | 'date-asc' | 'topic' | null) ?? 'date-desc'
+    const parsedSort = newsSortSchema.safeParse(sortParam)
+    const sortBy = parsedSort.success ? parsedSort.data : 'date-desc'
 
     // Clearance: keep responses capped at 9 posts for predictable latency
     const { posts, total } = await getNewsPosts({

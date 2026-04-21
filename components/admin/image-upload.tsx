@@ -8,6 +8,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Upload, X, Image as ImageIcon, Link, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  getAllowedUploadImageAcceptValue,
+  getMaxUploadImageBytes,
+  isAllowedAdminImageUrl,
+} from '@/lib/security/images'
 
 interface ImageUploadProps {
   value: string
@@ -22,15 +27,18 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [urlInput, setUrlInput] = useState(value)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const maxUploadBytes = getMaxUploadImageBytes()
+  const maxUploadSizeMb = Math.floor(maxUploadBytes / (1024 * 1024))
+  const allowedUploadAcceptValue = getAllowedUploadImageAcceptValue()
 
   const handleFileUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file')
+    if (!allowedUploadAcceptValue.split(',').includes(file.type)) {
+      setUploadError('Please select a JPG, PNG, WebP, or GIF image')
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      setUploadError('Image must be less than 5MB')
+    if (file.size > maxUploadBytes) {
+      setUploadError(`Image must be less than ${maxUploadSizeMb}MB`)
       return
     }
 
@@ -74,7 +82,15 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
   }
 
   const handleUrlSubmit = () => {
-    onChange(urlInput)
+    const trimmedValue = urlInput.trim()
+    if (!isAllowedAdminImageUrl(trimmedValue, process.env.NEXT_PUBLIC_SUPABASE_URL)) {
+      setUploadError('Image URL must use HTTPS or be a root-relative app path')
+      return
+    }
+
+    setUploadError(null)
+    setUrlInput(trimmedValue)
+    onChange(trimmedValue)
   }
 
   const clearImage = () => {
@@ -107,7 +123,7 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium">Drop an image here, or click to browse</p>
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 5MB</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP, or GIF up to {maxUploadSizeMb}MB</p>
                 </div>
                 <Button
                   type="button"
@@ -130,7 +146,7 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={allowedUploadAcceptValue}
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -147,7 +163,7 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
           <div className="flex space-x-2">
             <Input
               type="url"
-              placeholder="https://example.com/image.jpg"
+              placeholder="https://example.com/image.jpg or /bytebrief-logo.png"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
             />
@@ -161,6 +177,9 @@ export function ImageUpload({ value, onChange, onAltChange, alt = '', placeholde
               Add URL
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Use an uploaded image, an HTTPS image URL, or a root-relative app asset path.
+          </p>
         </TabsContent>
       </Tabs>
 

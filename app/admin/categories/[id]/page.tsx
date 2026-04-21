@@ -4,7 +4,7 @@ import { EditCategoryForm } from '@/components/admin/edit-category-form'
 import { prisma } from '@/lib/prisma'
 
 interface EditCategoryPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 async function getCategory(id: string) {
@@ -33,7 +33,8 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
     redirect('/admin/login')
   }
   
-  const category = await getCategory(params.id)
+  const { id } = await params
+  const category = await getCategory(id)
   
   if (!category) {
     notFound()

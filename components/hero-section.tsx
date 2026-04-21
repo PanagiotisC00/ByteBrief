@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, Clock, User, Calendar } from "lucide-react"
@@ -11,21 +10,16 @@ import { AnimatePresence, m, type Variants } from "framer-motion"
 import { HeroMotionProvider } from "@/components/hero/hero-motion"
 import { CircuitBackdrop } from "@/components/hero/circuit-backdrop"
 import { CyberCube } from "@/components/hero/cyber-cube"
+import { FallbackImage } from "@/components/ui/fallback-image"
 
 // Clearance: Optimized image component for Hero to prevent layout shift and mobile lag
 function HeroImage({ src, alt, className }: { src: string | null; alt: string; className?: string }) {
-  const [imgSrc, setImgSrc] = useState(src || "/bytebrief-logo.png")
-  
   return (
     <div className={`relative ${className}`}>
-      <Image
-        src={imgSrc}
+      <FallbackImage
+        src={src}
         alt={alt}
-        fill
-        className="object-contain"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        priority
-        onError={() => setImgSrc("/bytebrief-logo.png")}
+        className="h-full w-full object-contain"
       />
     </div>
   )

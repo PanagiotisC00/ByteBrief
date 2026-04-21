@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentSession } from '@/lib/utils/auth'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { v4 as uuidv4 } from 'uuid'
+import {
+  describeUploadImage,
+  getAllowedUploadImageMimeTypes,
+  getMaxUploadImageBytes,
+} from '@/lib/security/images'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,39 +19,47 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get('file') as File
+    const file = formData.get('file')
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'File must be an image' }, { status: 400 })
+    const allowedMimeTypes = getAllowedUploadImageMimeTypes()
+    if (!allowedMimeTypes.includes(file.type as (typeof allowedMimeTypes)[number])) {
+      return NextResponse.json(
+        { error: 'File must be a JPG, PNG, WebP, or GIF image' },
+        { status: 400 }
+      )
     }
 
     // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > getMaxUploadImageBytes()) {
       return NextResponse.json({ error: 'File must be less than 5MB' }, { status: 400 })
     }
-
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop()
-    const fileName = `${Date.now()}-${uuidv4()}.${fileExtension}`
-    // Fix: Don't nest bucket name in path
-    const filePath = fileName
 
     // Convert File to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
     const uint8Array = new Uint8Array(arrayBuffer)
+    const descriptor = describeUploadImage(file.type, uint8Array)
+
+    if (!descriptor) {
+      return NextResponse.json(
+        { error: 'File contents do not match an allowed image type' },
+        { status: 400 }
+      )
+    }
+
+    const fileName = `${Date.now()}-${uuidv4()}.${descriptor.extension}`
+    const filePath = fileName
 
     // Upload to Supabase Storage with service role for admin operations
     const supabase = createServiceRoleClient()
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('blog-images')
       .upload(filePath, uint8Array, {
-        contentType: file.type,
+        contentType: descriptor.mimeType,
         cacheControl: '3600',
         upsert: false
       })

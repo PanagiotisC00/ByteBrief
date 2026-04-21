@@ -38,7 +38,6 @@ export default async function NewPostPage() {
       <NewPostForm 
         categories={categories} 
         tags={tags}
-        authorId={session.user.id}
       />
     </div>
   )

@@ -15,12 +15,12 @@ export const dynamic = 'force-dynamic'
 const CATEGORY_PAGE_SIZE = 9
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     page?: string
-  }
+  }>
 }
 
 // Clearance: fetch paged posts so categories with many articles stay fast
@@ -101,10 +101,11 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: CategoryPageProps) {
-  const pageParam = Number(searchParams.page ?? '1')
+  const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams])
+  const pageParam = Number(resolvedSearchParams.page ?? '1')
   const currentPage = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1
 
-  const data = await getCategoryPageData(params.slug, currentPage)
+  const data = await getCategoryPageData(slug, currentPage)
 
   if (!data) {
     notFound()
@@ -237,7 +238,7 @@ export default async function CategoryPage({
                       disabled={!hasPrevious}
                     >
                       <LoadingLink
-                        href={`/category/${params.slug}${hasPrevious ? `?page=${currentPage - 1}` : ''}`}
+                        href={`/category/${slug}${hasPrevious ? `?page=${currentPage - 1}` : ''}`}
                         loadingLabel="Loading category…"
                       >
                         Previous
@@ -254,7 +255,7 @@ export default async function CategoryPage({
                       disabled={!hasNext}
                     >
                       <LoadingLink
-                        href={`/category/${params.slug}${hasNext ? `?page=${currentPage + 1}` : ''}`}
+                        href={`/category/${slug}${hasNext ? `?page=${currentPage + 1}` : ''}`}
                         loadingLabel="Loading category…"
                       >
                         Next
@@ -274,8 +275,9 @@ export default async function CategoryPage({
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: CategoryPageProps) {
+  const { slug } = await params
   const category = await prisma.category.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       name: true,
       description: true,

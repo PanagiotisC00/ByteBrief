@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentSession } from '@/lib/utils/auth'
 import { prisma } from '@/lib/prisma'
+import { categoryBodySchema, formatZodError } from '@/lib/validation/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,31 +12,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const {
-      name,
-      slug,
-      description,
-      color,
-      icon
-    } = body
-
-    // Validate required fields
-    if (!name || !slug) {
-      return NextResponse.json(
-        { error: 'Name and slug are required' },
-        { status: 400 }
-      )
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    // Check if slug already exists
-    const existingCategory = await prisma.category.findUnique({
-      where: { slug }
+    const parsedBody = categoryBodySchema.safeParse(body)
+    if (!parsedBody.success) {
+      return NextResponse.json(formatZodError(parsedBody.error), { status: 400 })
+    }
+
+    const { name, slug, description, color, icon } = parsedBody.data
+
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { name },
+          { slug },
+        ],
+      },
     })
 
     if (existingCategory) {
       return NextResponse.json(
-        { error: 'A category with this name already exists' },
+        { error: existingCategory.slug === slug ? 'A category with this slug already exists' : 'A category with this name already exists' },
         { status: 400 }
       )
     }
@@ -54,6 +56,10 @@ export async function POST(request: NextRequest) {
     // Revalidate relevant pages
     revalidatePath('/admin/categories')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/category/${category.slug}`)
 
     return NextResponse.json(category, { status: 201 })
   } catch (error) {

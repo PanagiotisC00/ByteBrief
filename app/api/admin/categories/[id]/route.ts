@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { PostStatus } from '@prisma/client'
 import { getCurrentSession } from '@/lib/utils/auth'
 import { prisma } from '@/lib/prisma'
+import { adminIdParamsSchema, categoryBodySchema, formatZodError } from '@/lib/validation/admin'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getCurrentSession()
@@ -14,26 +16,33 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const {
-      name,
-      slug,
-      description,
-      color,
-      icon
-    } = body
-
-    // Validate required fields
-    if (!name || !slug) {
-      return NextResponse.json(
-        { error: 'Name and slug are required' },
-        { status: 400 }
-      )
+    const parsedParams = adminIdParamsSchema.safeParse(await params)
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 })
     }
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const parsedBody = categoryBodySchema.safeParse(body)
+    if (!parsedBody.success) {
+      return NextResponse.json(formatZodError(parsedBody.error), { status: 400 })
+    }
+
+    const { id } = parsedParams.data
+    const { name, slug, description, color, icon } = parsedBody.data
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id }
+      where: { id },
+      select: {
+        id: true,
+        slug: true,
+      },
     })
 
     if (!existingCategory) {
@@ -46,21 +55,24 @@ export async function PUT(
     // Check if slug conflicts with another category (excluding current one)
     const slugConflict = await prisma.category.findFirst({
       where: {
-        slug,
-        NOT: { id: params.id }
+        OR: [
+          { name },
+          { slug },
+        ],
+        NOT: { id }
       }
     })
 
     if (slugConflict) {
       return NextResponse.json(
-        { error: 'A category with this name already exists' },
+        { error: slugConflict.slug === slug ? 'A category with this slug already exists' : 'A category with this name already exists' },
         { status: 400 }
       )
     }
 
     // Update the category
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug,
@@ -73,6 +85,13 @@ export async function PUT(
     // Revalidate relevant pages
     revalidatePath('/admin/categories')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/category/${category.slug}`)
+    if (existingCategory.slug !== category.slug) {
+      revalidatePath(`/category/${existingCategory.slug}`)
+    }
 
     return NextResponse.json(category)
   } catch (error) {
@@ -85,8 +104,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getCurrentSession()
@@ -95,15 +114,22 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const parsedParams = adminIdParamsSchema.safeParse(await params)
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: 'Invalid category id' }, { status: 400 })
+    }
+
+    const { id } = parsedParams.data
+
     // Check if category exists and has posts
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
             posts: {
               where: {
-                status: 'PUBLISHED'
+                status: PostStatus.PUBLISHED
               }
             }
           }
@@ -127,12 +153,16 @@ export async function DELETE(
 
     // Delete the category
     await prisma.category.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     // Revalidate relevant pages
     revalidatePath('/admin/categories')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/category/${category.slug}`)
 
     return NextResponse.json({ message: 'Category deleted successfully' })
   } catch (error) {

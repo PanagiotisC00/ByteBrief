@@ -4,7 +4,7 @@ import { EditTagForm } from '@/components/admin/edit-tag-form'
 import { prisma } from '@/lib/prisma'
 
 interface EditTagPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 async function getTag(id: string) {
@@ -35,7 +35,8 @@ export default async function EditTagPage({ params }: EditTagPageProps) {
     redirect('/admin/login')
   }
   
-  const tag = await getTag(params.id)
+  const { id } = await params
+  const tag = await getTag(id)
   
   if (!tag) {
     notFound()

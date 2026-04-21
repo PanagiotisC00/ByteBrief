@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentSession } from '@/lib/utils/auth'
 import { prisma } from '@/lib/prisma'
+import { formatZodError, tagBodySchema } from '@/lib/validation/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,25 +12,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { name, slug } = body
-
-    // Validate required fields
-    if (!name || !slug) {
-      return NextResponse.json(
-        { error: 'Name and slug are required' },
-        { status: 400 }
-      )
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    // Check if slug already exists
-    const existingTag = await prisma.tag.findUnique({
-      where: { slug }
+    const parsedBody = tagBodySchema.safeParse(body)
+    if (!parsedBody.success) {
+      return NextResponse.json(formatZodError(parsedBody.error), { status: 400 })
+    }
+
+    const { name, slug } = parsedBody.data
+
+    const existingTag = await prisma.tag.findFirst({
+      where: {
+        OR: [
+          { name },
+          { slug },
+        ],
+      },
     })
 
     if (existingTag) {
       return NextResponse.json(
-        { error: 'A tag with this name already exists' },
+        { error: existingTag.slug === slug ? 'A tag with this slug already exists' : 'A tag with this name already exists' },
         { status: 400 }
       )
     }
@@ -45,6 +53,10 @@ export async function POST(request: NextRequest) {
     // Revalidate relevant pages
     revalidatePath('/admin/tags')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/tag/${tag.slug}`)
 
     return NextResponse.json(tag, { status: 201 })
   } catch (error) {

@@ -18,9 +18,9 @@ import { LoadingLink } from "@/components/ui/loading-link"
 export const dynamic = 'force-dynamic'
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Get blog post by slug
@@ -106,7 +106,8 @@ async function getRelatedPosts(categoryId: string, currentPostId: string, limit 
 
 // Generate dynamic metadata for each blog post
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getBlogPostCached(params.slug)
+  const { slug } = await params
+  const post = await getBlogPostCached(slug)
 
   if (!post) {
     return {
@@ -180,7 +181,8 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = await getBlogPostCached(params.slug)
+  const { slug } = await params
+  const post = await getBlogPostCached(slug)
 
   if (!post) {
     notFound()

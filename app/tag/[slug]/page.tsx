@@ -15,12 +15,12 @@ export const dynamic = 'force-dynamic'
 const TAG_PAGE_SIZE = 9
 
 interface TagPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     page?: string
-  }
+  }>
 }
 
 // Clearance: fetch paged posts for tag pages so large tag lists stay fast
@@ -104,10 +104,11 @@ async function getTagPageData(slug: string, page: number) {
 }
 
 export default async function TagPage({ params, searchParams }: TagPageProps) {
-  const pageParam = Number(searchParams.page ?? '1')
+  const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams])
+  const pageParam = Number(resolvedSearchParams.page ?? '1')
   const currentPage = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1
 
-  const data = await getTagPageData(params.slug, currentPage)
+  const data = await getTagPageData(slug, currentPage)
 
   if (!data) {
     notFound()
@@ -231,7 +232,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
                       disabled={!hasPrevious}
                     >
                       <LoadingLink
-                        href={`/tag/${params.slug}${hasPrevious ? `?page=${currentPage - 1}` : ''}`}
+                        href={`/tag/${slug}${hasPrevious ? `?page=${currentPage - 1}` : ''}`}
                         loadingLabel="Loading tag."
                       >
                         Previous
@@ -248,7 +249,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
                       disabled={!hasNext}
                     >
                       <LoadingLink
-                        href={`/tag/${params.slug}${hasNext ? `?page=${currentPage + 1}` : ''}`}
+                        href={`/tag/${slug}${hasNext ? `?page=${currentPage + 1}` : ''}`}
                         loadingLabel="Loading tag."
                       >
                         Next
@@ -267,8 +268,9 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 }
 
 export async function generateMetadata({ params }: TagPageProps) {
+  const { slug } = await params
   const tag = await prisma.tag.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       name: true,
     },

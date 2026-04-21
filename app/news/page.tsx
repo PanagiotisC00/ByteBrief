@@ -38,8 +38,10 @@ export const metadata: Metadata = {
 export default async function NewsPage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string }
+  searchParams: Promise<{ category?: string; search?: string }>
 }) {
+  const resolvedSearchParams = await searchParams
+
   // Clearance: keep category fetch simple; no sidebar trends needed anymore
   const categories = await getCategories()
 
@@ -49,8 +51,8 @@ export default async function NewsPage({
       <main className="pt-16">
         <NewsPageContent
           categories={categories}
-          initialCategory={searchParams.category || 'all'}
-          initialSearch={searchParams.search || ''}
+          initialCategory={resolvedSearchParams.category || 'all'}
+          initialSearch={resolvedSearchParams.search || ''}
         />
       </main>
       <Footer />

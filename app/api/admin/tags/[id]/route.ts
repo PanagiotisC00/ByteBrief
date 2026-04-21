@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { PostStatus } from '@prisma/client'
 import { getCurrentSession } from '@/lib/utils/auth'
 import { prisma } from '@/lib/prisma'
+import { adminIdParamsSchema, formatZodError, tagBodySchema } from '@/lib/validation/admin'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getCurrentSession()
@@ -14,20 +16,33 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { name, slug } = body
-
-    // Validate required fields
-    if (!name || !slug) {
-      return NextResponse.json(
-        { error: 'Name and slug are required' },
-        { status: 400 }
-      )
+    const parsedParams = adminIdParamsSchema.safeParse(await params)
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: 'Invalid tag id' }, { status: 400 })
     }
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const parsedBody = tagBodySchema.safeParse(body)
+    if (!parsedBody.success) {
+      return NextResponse.json(formatZodError(parsedBody.error), { status: 400 })
+    }
+
+    const { id } = parsedParams.data
+    const { name, slug } = parsedBody.data
 
     // Check if tag exists
     const existingTag = await prisma.tag.findUnique({
-      where: { id: params.id }
+      where: { id },
+      select: {
+        id: true,
+        slug: true,
+      },
     })
 
     if (!existingTag) {
@@ -40,21 +55,24 @@ export async function PUT(
     // Check if slug conflicts with another tag (excluding current one)
     const slugConflict = await prisma.tag.findFirst({
       where: {
-        slug,
-        NOT: { id: params.id }
+        OR: [
+          { name },
+          { slug },
+        ],
+        NOT: { id }
       }
     })
 
     if (slugConflict) {
       return NextResponse.json(
-        { error: 'A tag with this name already exists' },
+        { error: slugConflict.slug === slug ? 'A tag with this slug already exists' : 'A tag with this name already exists' },
         { status: 400 }
       )
     }
 
     // Update the tag
     const tag = await prisma.tag.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug
@@ -64,6 +82,13 @@ export async function PUT(
     // Revalidate relevant pages
     revalidatePath('/admin/tags')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/tag/${tag.slug}`)
+    if (existingTag.slug !== tag.slug) {
+      revalidatePath(`/tag/${existingTag.slug}`)
+    }
 
     return NextResponse.json(tag)
   } catch (error) {
@@ -76,8 +101,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getCurrentSession()
@@ -86,16 +111,23 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const parsedParams = adminIdParamsSchema.safeParse(await params)
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: 'Invalid tag id' }, { status: 400 })
+    }
+
+    const { id } = parsedParams.data
+
     // Check if tag exists and has posts
     const tag = await prisma.tag.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
             posts: {
               where: {
                 post: {
-                  status: 'PUBLISHED'
+                  status: PostStatus.PUBLISHED
                 }
               }
             }
@@ -120,12 +152,16 @@ export async function DELETE(
 
     // Delete the tag
     await prisma.tag.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     // Revalidate relevant pages
     revalidatePath('/admin/tags')
     revalidatePath('/admin')
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath('/news')
+    revalidatePath(`/tag/${tag.slug}`)
 
     return NextResponse.json({ message: 'Tag deleted successfully' })
   } catch (error) {

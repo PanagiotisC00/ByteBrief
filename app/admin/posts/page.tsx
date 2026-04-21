@@ -92,13 +92,14 @@ async function getCountCached(where: Prisma.PostWhereInput | undefined, cacheKey
 export default async function AdminPostsPage({
   searchParams,
 }: {
-  searchParams?: { page?: string | string[]; query?: string | string[] }
+  searchParams?: Promise<{ page?: string | string[]; query?: string | string[] }>
 }) {
   await requireAdmin()
-  const pageParam = searchParams?.page ?? '1'
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
+  const pageParam = resolvedSearchParams?.page ?? '1'
   const parsedPage = Number.parseInt(Array.isArray(pageParam) ? pageParam[0] : pageParam, 10)
   const requestedPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
-  const queryParam = searchParams?.query ?? ''
+  const queryParam = resolvedSearchParams?.query ?? ''
   const rawQuery = Array.isArray(queryParam) ? queryParam[0] : queryParam
   const normalizedQuery = rawQuery?.trim() ?? ''
   const where: Prisma.PostWhereInput | undefined = normalizedQuery

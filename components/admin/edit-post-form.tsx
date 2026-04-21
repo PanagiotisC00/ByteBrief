@@ -112,7 +112,8 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update post')
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to update post')
       }
 
       router.push('/admin/posts')
@@ -134,7 +135,8 @@ export function EditPostForm({ post, categories, tags }: EditPostFormProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete post')
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to delete post')
       }
 
       router.push('/admin/posts')

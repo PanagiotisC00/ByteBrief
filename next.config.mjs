@@ -14,16 +14,6 @@ const nextConfig = {
     return config
   },
   
-  // Image optimization configuration
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**', // Allow images from any HTTPS source for flexibility
-      },
-    ],
-  },
-  
   // Security headers for production
   async headers() {
     return [

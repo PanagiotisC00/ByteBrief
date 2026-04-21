@@ -93,6 +93,38 @@ Rules:
 6. Run the smallest useful checks first, then broader checks for risky changes.
 7. Finish with a concise summary of changed files, checks run, and any residual risk.
 
+## Findings-To-Fix Workflow
+
+When work starts from an audit, incident review, penetration finding, dependency advisory, or local findings file, follow this pattern:
+
+1. Restate the finding in concrete terms and confirm the affected code or dependency before editing.
+2. Verify current behavior with the smallest useful local check first. For example: targeted file review, typecheck, lint, build, or a focused manual flow.
+3. Use current primary sources for unstable behavior:
+   - official framework/package docs
+   - official changelogs and release notes
+   - official advisory pages or GitHub advisories
+4. Fix one issue cluster at a time. Keep unrelated refactors out of the same patch.
+5. After each fix, verify immediately with the smallest check that proves the change:
+   - route handler change: lint, typecheck, targeted request flow, then build if server behavior changed
+   - dependency change: reinstall, lint, typecheck, build, and rerun audit if practical
+   - rendering/security change: exercise the relevant page or admin flow locally
+6. Maintain a local checklist document when the task spans multiple findings. For each item, record:
+   - status: pending, in progress, done
+   - code fix summary
+   - verification performed
+   - manual work required, if any
+   - residual risk or follow-up
+7. If a fix requires manual operator work, call it out explicitly and separately from completed code work.
+8. Treat framework major upgrades and dependency security upgrades as their own verified step, because they often mix security benefit with compatibility risk.
+
+Preferred checklist shape in Markdown:
+
+- `[ ]` pending
+- `[-]` in progress
+- `[x]` done
+- `Tested:` short bullet list of checks actually run
+- `Manual:` short bullet list of operator work still required, or `None`
+
 ## Current Verification Baseline
 
 - There is no dedicated `test` script in `package.json`.

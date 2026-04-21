@@ -37,10 +37,9 @@ type Tag = {
 interface NewPostFormProps {
   categories: Category[]
   tags: Tag[]
-  authorId: string
 }
 
-export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
+export function NewPostForm({ categories, tags }: NewPostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
@@ -133,13 +132,13 @@ export function NewPostForm({ categories, tags, authorId }: NewPostFormProps) {
         },
         body: JSON.stringify({
           ...formData,
-          authorId,
           tags: selectedTags,
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create post')
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to create post')
       }
 
       await response.json()

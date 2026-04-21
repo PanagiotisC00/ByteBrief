@@ -51,6 +51,12 @@ interface PostsTableProps {
   posts: PostWithDetails[]
 }
 
+const statusRank: Record<string, number> = {
+  PUBLISHED: 3,
+  DRAFT: 2,
+  ARCHIVED: 1,
+}
+
 export function PostsTable({ posts }: PostsTableProps) {
   const router = useRouter()
   const pointerDownTarget = useRef<HTMLElement | null>(null)
@@ -96,12 +102,6 @@ export function PostsTable({ posts }: PostsTableProps) {
       default:
         return 'bg-gray-100 text-gray-800'
     }
-  }
-
-  const statusRank: Record<string, number> = {
-    PUBLISHED: 3,
-    DRAFT: 2,
-    ARCHIVED: 1
   }
 
   const sortedPosts = useMemo(() => {

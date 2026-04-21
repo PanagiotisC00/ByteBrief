@@ -5,6 +5,7 @@ AGENTS.md
 env-template.txt
 env_photo_vercel.png
 incident.txt
+SECURITY_FOLLOWUP_FINDINGS.md
 
 # Dependencies
 /node_modules
